@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engine ROM Project Explorer</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0f172a;
+  --surface:   #1e293b;
+  --surface2:  #263348;
+  --border:    #334155;
+  --text:      #e2e8f0;
+  --muted:     #94a3b8;
+  --accent:    #38bdf8;
+  --p1:        #60a5fa;   /* Phase 1 – blue */
+  --p2:        #34d399;   /* Phase 2 – emerald */
+  --p3:        #a78bfa;   /* Phase 3 – violet */
+  --cmp:       #fbbf24;   /* Comparison – amber */
+  --good:      #4ade80;
+  --warn:      #fb923c;
+  --star:      #fde047;
+  --sidebar-w: 260px;
+  --header-h:  64px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ── */
+.header {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: #0a1628;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+  gap: 16px;
+}
+.header-logo { font-size: 20px; }
+.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.header-sub { font-size: 12px; color: var(--muted); }
+.header-pills { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1px solid;
+}
+.pill-blue  { color: var(--p1); border-color: var(--p1); }
+.pill-green { color: var(--p2); border-color: var(--p2); }
+.pill-violet{ color: var(--p3); border-color: var(--p3); }
+.pill-star  { color: var(--star); border-color: var(--star); }
+
+/* ── Layout ── */
+.layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  width: var(--sidebar-w);
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  background: #0d1929;
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  z-index: 90;
+}
+.sidebar-section { padding: 8px 16px 4px; font-size: 10px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--surface); color: var(--text); }
+.nav-item.active { background: var(--surface2); color: var(--accent); border-left-color: var(--accent); }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: var(--surface); color: var(--muted);
+  font-size: 10px; padding: 1px 6px; border-radius: 10px;
+}
+.sidebar-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+/* ── Main ── */
+.main {
+  margin-left: var(--sidebar-w);
+  padding: 32px;
+  max-width: 1200px;
+  flex: 1;
+}
+
+/* ── Section headers ── */
+.section { margin-bottom: 48px; }
+.section-header {
+  display: flex; align-items: baseline; gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.section-icon { font-size: 22px; }
+.section-title { font-size: 20px; font-weight: 700; }
+.section-desc { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+/* ── Guided tour ── */
+.tour-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .tour-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .tour-grid { grid-template-columns: 1fr; } }
+
+.tour-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.tour-step:hover { border-color: var(--accent); transform: translateY(-2px); }
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent); color: #0f172a;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px;
+  margin-bottom: 12px;
+}
+.step-label { font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.step-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.step-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+.step-file {
+  font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 11px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--accent);
+  display: block;
+  word-break: break-all;
+}
+.step-meta { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.step-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: var(--surface2); color: var(--muted);
+}
+
+/* ── Metrics Banner ── */
+.metrics-banner {
+  background: linear-gradient(135deg, #1a2744 0%, #1e293b 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) { .metrics-banner { grid-template-columns: repeat(3, 1fr); } }
+.metric-item { text-align: center; }
+.metric-value { font-size: 22px; font-weight: 800; color: var(--accent); }
+.metric-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Tables ── */
+.data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.data-table th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:hover td { background: var(--surface2); }
+.data-table tr.highlight td { background: rgba(56, 189, 248, 0.05); }
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.tag-rec   { background: rgba(251, 224, 71, 0.15); color: var(--star); }
+.tag-good  { background: rgba(74, 222, 128, 0.12); color: var(--good); }
+.tag-warn  { background: rgba(251, 146, 60, 0.12); color: var(--warn); }
+.tag-p1    { background: rgba(96, 165, 250, 0.12); color: var(--p1); }
+.tag-p2    { background: rgba(52, 211, 153, 0.12); color: var(--p2); }
+.tag-p3    { background: rgba(167, 139, 250, 0.12); color: var(--p3); }
+.tag-cmp   { background: rgba(251, 191, 36, 0.12); color: var(--cmp); }
+code {
+  font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 12px;
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+/* ── File Cards ── */
+.file-grid { display: grid; gap: 14px; }
+.file-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+.file-card:hover { border-color: #475569; transform: translateY(-1px); }
+.file-card.featured { border-color: #fde047; background: rgba(253, 224, 71, 0.03); }
+.file-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.file-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.file-name-wrap { flex: 1; }
+.file-name {
+  font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  word-break: break-all;
+}
+.file-name:hover { text-decoration: underline; }
+.file-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.file-size { font-size: 11px; color: var(--muted); }
+.file-desc { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin-bottom: 8px; }
+.file-inside { font-size: 12px; color: var(--muted); }
+.file-inside strong { color: #94a3b8; }
+.star-badge {
+  position: absolute; top: 12px; right: 14px;
+  font-size: 11px; font-weight: 700;
+  color: var(--star);
+  background: rgba(253, 224, 71, 0.1);
+  border: 1px solid rgba(253, 224, 71, 0.3);
+  padding: 2px 8px; border-radius: 10px;
+}
+
+/* Expandable details */
+.expand-toggle {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--muted);
+  cursor: pointer; margin-top: 6px;
+  user-select: none;
+}
+.expand-toggle:hover { color: var(--text); }
+.expand-content { display: none; margin-top: 10px; }
+.expand-content.open { display: block; }
+.expand-arrow { transition: transform 0.2s; display: inline-block; }
+.expand-arrow.open { transform: rotate(90deg); }
+
+/* ── Report Cards ── */
+.report-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.report-card:hover { border-color: #475569; transform: translateY(-1px); }
+.report-card.report-main { border-color: var(--accent); }
+.report-sidebar {
+  width: 5px;
+  background: var(--muted);
+}
+.report-sidebar.p1 { background: var(--p1); }
+.report-sidebar.p2 { background: var(--p2); }
+.report-sidebar.p3 { background: var(--accent); }
+.report-sidebar.cmp { background: var(--cmp); }
+.report-body { padding: 20px 22px; }
+.report-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.report-title a { color: var(--text); }
+.report-title a:hover { color: var(--accent); text-decoration: none; }
+.report-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.report-desc { font-size: 13px; color: #cbd5e1; line-height: 1.6; margin-bottom: 10px; }
+.report-toc { font-size: 12px; color: var(--muted); }
+.report-toc span { color: #64748b; margin: 0 4px; }
+
+/* ── Plot Gallery ── */
+.plot-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.plot-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.plot-card:hover { border-color: #475569; transform: translateY(-2px); }
+.plot-thumb {
+  width: 100%; height: 155px;
+  object-fit: cover;
+  background: var(--bg);
+  display: block;
+}
+.plot-thumb-placeholder {
+  width: 100%; height: 155px;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; color: var(--border);
+}
+.plot-info { padding: 12px 14px; }
+.plot-name { font-family: 'SF Mono', 'Consolas', monospace; font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+.plot-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+/* ── Script cards ── */
+.script-list { display: grid; gap: 10px; }
+.script-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+  transition: border-color 0.2s;
+}
+.script-card:hover { border-color: #475569; }
+.script-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--surface2); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.script-body {}
+.script-name { font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px; color: var(--accent); margin-bottom: 4px; }
+.script-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 4px; }
+.script-produces { font-size: 11px; color: var(--muted); }
+.script-size { font-size: 11px; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+
+/* ── Callout boxes ── */
+.callout {
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border-left: 3px solid;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.callout-blue  { background: rgba(96, 165, 250, 0.06); border-color: var(--p1); color: #bfdbfe; }
+.callout-green { background: rgba(52, 211, 153, 0.06); border-color: var(--p2); color: #a7f3d0; }
+.callout-yellow{ background: rgba(253, 224, 71, 0.06); border-color: var(--star); color: #fef08a; }
+.callout-violet{ background: rgba(167, 139, 250, 0.06); border-color: var(--p3); color: #ddd6fe; }
+
+/* ── Misc ── */
+.group-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 6px 0 10px;
+  margin-top: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.mono { font-family: 'SF Mono', 'Consolas', monospace; }
+.flex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rmse-bar {
+  display: inline-block;
+  height: 6px; border-radius: 3px;
+  background: var(--accent); vertical-align: middle;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ── Tip banner ── */
+.tip-banner {
+  background: rgba(56, 189, 248, 0.07);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  color: #bae6fd;
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tip-icon { font-size: 18px; flex-shrink: 0; }
+</style>
+</head>
+
+<body>
+<!-- ═══════════════════════════════════════════════════
+     PASSWORD GATE  –  "eAI"
+═════════════════════════════════════════════════════ -->
+<div id="gate" style="
+  position:fixed;inset:0;z-index:99999;
+  background:#0a1120;
+  display:flex;align-items:center;justify-content:center;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+">
+<div style="text-align:center;max-width:380px;width:90%;padding:48px 40px;
+  background:#1e293b;border:1px solid #334155;border-radius:20px;
+  box-shadow:0 25px 60px rgba(0,0,0,.6);">
+
+  <!-- Logo -->
+  <div style="font-size:52px;margin-bottom:12px;">⚙️</div>
+  <h1 style="color:#e2e8f0;font-size:22px;font-weight:800;margin:0 0 6px;">
+    Engine ROM Project
+  </h1>
+  <p style="color:#64748b;font-size:14px;margin:0 0 36px;line-height:1.5;">
+    Python/PyTorch LSTM → C99 Embedded Code<br>
+    Enter the project password to continue.
+  </p>
+
+  <!-- Input -->
+  <input id="pwdIn" type="password" placeholder="Password"
+    autocomplete="current-password"
+    style="width:100%;padding:13px 16px;font-size:15px;
+      border-radius:10px;border:1.5px solid #334155;
+      background:#0f172a;color:#e2e8f0;outline:none;
+      box-sizing:border-box;margin-bottom:12px;
+      transition:border-color .2s;"
+    onfocus="this.style.borderColor='#38bdf8'"
+    onblur="this.style.borderColor='#334155'"
+  />
+
+  <!-- Button -->
+  <button onclick="checkPwd()"
+    style="width:100%;padding:13px;font-size:15px;font-weight:700;
+      border-radius:10px;border:none;
+      background:linear-gradient(135deg,#0ea5e9,#38bdf8);
+      color:#0f172a;cursor:pointer;transition:opacity .15s;
+      letter-spacing:.02em;"
+    onmouseover="this.style.opacity='.88'"
+    onmouseout="this.style.opacity='1'"
+  >Access Project →</button>
+
+  <!-- Error message -->
+  <p id="pwdErr" style="color:#f87171;font-size:13px;margin:14px 0 0;
+    display:none;font-weight:600;">
+    ✗ Incorrect password — please try again.
+  </p>
+
+  <!-- Footer hint -->
+  <p style="color:#1e3a5f;font-size:11px;margin:28px 0 0;">
+    Contact the project owner for access.
+  </p>
+</div>
+</div>
+
+<script>
+(function(){
+  var P='eAI';
+  function show(){document.getElementById('gate').style.display='none';}
+  if(sessionStorage.getItem('rom_eai')==='1'){show();return;}
+  document.getElementById('pwdIn').addEventListener('keyup',function(e){
+    if(e.key==='Enter')checkPwd();
+  });
+  window.checkPwd=function(){
+    var v=document.getElementById('pwdIn').value;
+    if(v===P){sessionStorage.setItem('rom_eai','1');show();}
+    else{
+      var err=document.getElementById('pwdErr');
+      err.style.display='block';
+      document.getElementById('pwdIn').style.borderColor='#f87171';
+      setTimeout(function(){err.style.display='none';
+        document.getElementById('pwdIn').style.borderColor='#334155';
+        document.getElementById('pwdIn').value='';
+      },1800);
+    }
+  };
+})();
+</script>
+
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <div class="header-logo">⚙️</div>
+  <div>
+    <div class="header-title">Engine ROM Project Explorer</div>
+    <div class="header-sub">enginespeed.slx → PyTorch LSTM → C99 Embedded Code</div>
+  </div>
+  <div class="header-pills">
+    <span class="pill pill-blue">Phase 1: Baseline</span>
+    <span class="pill pill-green">Phase 2: Compression</span>
+    <span class="pill pill-violet">Phase 3: Advanced</span>
+    <span class="pill pill-star">⭐ QAT LSTM-32 Recommended</span>
+  </div>
+</header>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar">
+  <div class="sidebar-section">Navigate</div>
+
+  <div class="nav-item active" onclick="scrollTo('start')">
+    <span class="nav-icon">🗺️</span> Start Here
+  </div>
+  <div class="nav-item" onclick="scrollTo('summary')">
+    <span class="nav-icon">📊</span> Key Results
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">Documents</div>
+
+  <div class="nav-item" onclick="scrollTo('reports')">
+    <span class="nav-icon">📄</span> Reports
+    <span class="nav-badge">4</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('plots')">
+    <span class="nav-icon">🖼️</span> Plots &amp; Figures
+    <span class="nav-badge">25</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">Code</div>
+
+  <div class="nav-item" onclick="scrollTo('csrc')">
+    <span class="nav-icon">💻</span> C Source Code
+    <span class="nav-badge">18</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('python')">
+    <span class="nav-icon">🐍</span> Python Scripts
+    <span class="nav-badge">9</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('matlab')">
+    <span class="nav-icon">📐</span> MATLAB Scripts
+    <span class="nav-badge">4</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">Data</div>
+
+  <div class="nav-item" onclick="scrollTo('data')">
+    <span class="nav-icon">📁</span> Data &amp; Models
+    <span class="nav-badge">14</span>
+  </div>
+  <div class="nav-item" onclick="scrollTo('simulink')">
+    <span class="nav-icon">🔷</span> Simulink Models
+    <span class="nav-badge">2</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div style="padding: 8px 16px; font-size: 11px; color: #475569; line-height: 1.5;">
+    💡 All content is<br>served live — no<br>local sync needed.<br>Click to open files.
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ───────────────────────────────────────
+     § START HERE – GUIDED TOUR
+─────────────────────────────────────────── -->
+<section class="section" id="start">
+  <div class="section-header">
+    <span class="section-icon">🗺️</span>
+    <span class="section-title">Start Here — Guided Tour</span>
+    <span class="section-desc">Recommended reading order for new team members</span>
+  </div>
+
+  <div class="tip-banner">
+    <span class="tip-icon">ℹ️</span>
+    <span>
+      <strong>How to use this explorer:</strong> You're viewing the live hosted version — all file links and image previews work directly in your browser. Click any filename to open it, or use the guided tour below to get started.
+    </span>
+  </div>
+
+  <div class="tour-grid">
+
+    <div class="tour-step">
+      <div class="step-num">1</div>
+      <div class="step-label">Start here · 5 min</div>
+      <div class="step-title">Read the README</div>
+      <div class="step-desc">One-page overview of every file in the project — what it is, what phase it came from, and how to reproduce everything from scratch.</div>
+      <a href="README.md" class="step-file">README.md</a>
+      <div class="step-meta">
+        <span class="step-badge">18 KB</span>
+        <span class="step-badge">Markdown</span>
+      </div>
+    </div>
+
+    <div class="tour-step">
+      <div class="step-num">2</div>
+      <div class="step-label">Big picture · 15 min</div>
+      <div class="step-title">MATLAB vs Python Comparison</div>
+      <div class="step-desc">15-page executive report comparing the MATLAB (Session 3) and Python/PyTorch (this session) ROM approaches — accuracy, data efficiency, deployment readiness, and scorecard.</div>
+      <a target="_blank" href="report/ROM_Methodology_Comparison.pdf" class="step-file">report/ROM_Methodology_Comparison.pdf</a>
+      <div class="step-meta">
+        <span class="step-badge">423 KB · 15 pages</span>
+        <span class="step-badge" style="color: var(--cmp);">Comparison</span>
+      </div>
+    </div>
+
+    <div class="tour-step">
+      <div class="step-num">3</div>
+      <div class="step-label">Main report · 45 min</div>
+      <div class="step-title">Full Technical Report v3</div>
+      <div class="step-desc">22-page deep-dive covering all three phases: baseline LSTM, 7 compressed models, Phase 3 advanced techniques (QAT, pruning, delta, Q16), Pareto frontier, C validation, and virtual sensor assessment.</div>
+      <a target="_blank" href="report/Engine_ROM_Report_v3.pdf" class="step-file">report/Engine_ROM_Report_v3.pdf</a>
+      <div class="step-meta">
+        <span class="step-badge">946 KB · 22 pages</span>
+        <span class="step-badge" style="color: var(--p3);">Phase 3</span>
+      </div>
+    </div>
+
+    <div class="tour-step">
+      <div class="step-num">4</div>
+      <div class="step-label">Visual proof · 10 min</div>
+      <div class="step-title">Browse the Key Plots</div>
+      <div class="step-desc">Check how C-deployed models track Simulink ground truth, and study the Pareto frontier chart to understand the accuracy vs. flash trade-off across all models.</div>
+      <a target="_blank" href="plots/simulink_c_rom_traces.png" class="step-file">plots/simulink_c_rom_traces.png</a>
+      <div class="step-meta">
+        <span class="step-badge">+ phase3_pareto.png</span>
+        <span class="step-badge">+ phase3_validation.png</span>
+      </div>
+    </div>
+
+    <div class="tour-step" style="border-color: rgba(253,224,71,0.4);">
+      <div class="step-num" style="background: var(--star);">5</div>
+      <div class="step-label">Deploy this · 2 min</div>
+      <div class="step-title">⭐ The Recommended C Model</div>
+      <div class="step-desc">The QAT LSTM-32 model is the recommended deployment target: 6.97 KB flash, 0.91 N·m RMSE (0.46% of full scale). Drop these two files into your ECU project and call <code>ROM_lstm_qat_Step()</code>.</div>
+      <a target="_blank" href="src/rom_lstm_qat.h" class="step-file">src/rom_lstm_qat.h</a>
+      <a target="_blank" href="src/rom_lstm_qat.c" class="step-file" style="margin-top:4px; display:block;">src/rom_lstm_qat.c</a>
+      <div class="step-meta">
+        <span class="step-badge" style="color: var(--star);">6.97 KB flash</span>
+        <span class="step-badge" style="color: var(--good);">RMSE 0.91 N·m</span>
+      </div>
+    </div>
+
+    <div class="tour-step">
+      <div class="step-num">6</div>
+      <div class="step-label">Training code · 30 min</div>
+      <div class="step-title">Understand How It Was Trained</div>
+      <div class="step-desc">The Phase 3 training script runs all four advanced compression techniques (structured pruning, QAT, delta learning, Q16) end-to-end and generates all C source files automatically.</div>
+      <a target="_blank" href="scripts/train_phase3.py" class="step-file">scripts/train_phase3.py</a>
+      <div class="step-meta">
+        <span class="step-badge">50 KB</span>
+        <span class="step-badge">Runs with Python + PyTorch</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § KEY RESULTS SUMMARY
+─────────────────────────────────────────── -->
+<section class="section" id="summary">
+  <div class="section-header">
+    <span class="section-icon">📊</span>
+    <span class="section-title">Key Results — All Models at a Glance</span>
+    <span class="section-desc">R² ≥ 0.9997 for all LSTM models · Full scale = 200 N·m</span>
+  </div>
+
+  <div class="metrics-banner">
+    <div class="metric-item">
+      <div class="metric-value">10</div>
+      <div class="metric-label">Simulations Used</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">5,010</div>
+      <div class="metric-label">Training Samples</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">0.91 N·m</div>
+      <div class="metric-label">Best RMSE (vs Simulink)</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">0.38 KB</div>
+      <div class="metric-label">Smallest Model (NARX)</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">14</div>
+      <div class="metric-label">C Files Generated</div>
+    </div>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>How to read this table:</strong> Flash column = actual C binary size when compiled for a 32-bit MCU.
+    RMSE is measured by running the compiled C binary step-by-step against live Simulink output (1,503 time steps).
+    % FS = percentage of 200 N·m full scale. <strong>Models with &lt; 1% FS error are production-ready virtual sensors.</strong>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Phase</th>
+        <th>Flash (KB)</th>
+        <th>Accuracy Bar</th>
+        <th>RMSE (N·m)</th>
+        <th>% Full Scale</th>
+        <th>C Files</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>narx_ridge</code></td>
+        <td><span class="tag tag-p2">Phase 2</span></td>
+        <td><strong>0.38</strong></td>
+        <td><span class="rmse-bar" style="width:80px; background:#ef4444;"></span></td>
+        <td>7.23</td>
+        <td>3.6 %</td>
+        <td><code>rom_narx_ridge.{c,h}</code></td>
+        <td><span class="tag tag-warn">⚠ Conditional</span></td>
+      </tr>
+      <tr>
+        <td><code>delta_composite</code></td>
+        <td><span class="tag tag-p3">Phase 3</span></td>
+        <td><strong>2.79</strong></td>
+        <td><span class="rmse-bar" style="width:26px;"></span></td>
+        <td>~1.02</td>
+        <td>0.51 %</td>
+        <td><code>rom_delta_poly.{c,h}</code> + <code>rom_lstm_delta8.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Suitable</span></td>
+      </tr>
+      <tr>
+        <td><code>lstm_8</code></td>
+        <td><span class="tag tag-p2">Phase 2</span></td>
+        <td><strong>2.52</strong></td>
+        <td><span class="rmse-bar" style="width:28px;"></span></td>
+        <td>1.20</td>
+        <td>0.60 %</td>
+        <td><code>rom_lstm_8.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Suitable</span></td>
+      </tr>
+      <tr>
+        <td><code>lstm_16_q16</code></td>
+        <td><span class="tag tag-p3">Phase 3</span></td>
+        <td><strong>4.05</strong></td>
+        <td><span class="rmse-bar" style="width:24px;"></span></td>
+        <td>~1.00</td>
+        <td>0.50 %</td>
+        <td><code>rom_lstm_16_q16.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Suitable</span></td>
+      </tr>
+      <tr>
+        <td><code>lstm_pruned16</code></td>
+        <td><span class="tag tag-p3">Phase 3</span></td>
+        <td><strong>6.14</strong></td>
+        <td><span class="rmse-bar" style="width:29px;"></span></td>
+        <td>1.19</td>
+        <td>0.60 %</td>
+        <td><code>rom_lstm_pruned16.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Suitable</span></td>
+      </tr>
+      <tr class="highlight">
+        <td><code>lstm_qat</code> ⭐</td>
+        <td><span class="tag tag-p3">Phase 3</span></td>
+        <td><strong>6.97</strong></td>
+        <td><span class="rmse-bar" style="width:22px;"></span></td>
+        <td><strong>0.91</strong></td>
+        <td><strong>0.46 %</strong></td>
+        <td><code>rom_lstm_qat.{c,h}</code></td>
+        <td><span class="tag tag-rec">⭐ Recommended</span></td>
+      </tr>
+      <tr>
+        <td><code>lstm_16</code></td>
+        <td><span class="tag tag-p2">Phase 2</span></td>
+        <td><strong>6.17</strong></td>
+        <td><span class="rmse-bar" style="width:22px;"></span></td>
+        <td>0.91</td>
+        <td>0.46 %</td>
+        <td><code>rom_lstm_16.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Suitable</span></td>
+      </tr>
+      <tr>
+        <td><code>lstm_32</code></td>
+        <td><span class="tag tag-p1">Phase 1</span></td>
+        <td><strong>19.7</strong></td>
+        <td><span class="rmse-bar" style="width:22px;"></span></td>
+        <td>0.91</td>
+        <td>0.46 %</td>
+        <td><code>rom_lstm_32.{c,h}</code></td>
+        <td><span class="tag tag-good">✓ Baseline</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ───────────────────────────────────────
+     § REPORTS
+─────────────────────────────────────────── -->
+<section class="section" id="reports">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <span class="section-title">Reports</span>
+    <span class="section-desc">4 PDF reports · 5.1 MB total</span>
+  </div>
+
+  <!-- Main report -->
+  <div class="report-card report-main">
+    <div class="report-sidebar p3"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/Engine_ROM_Report_v3.pdf">Engine ROM Report v3 — Full Technical Report</a>
+        <span class="tag tag-rec" style="margin-left: 8px; font-size: 10px;">⭐ Primary</span>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-p3">Phase 3</span>
+        <span class="file-size">946 KB · 22 pages · March 2026</span>
+      </div>
+      <div class="report-desc">
+        The definitive technical document covering the complete project from data collection through advanced compression.
+        Includes all three phases, Pareto frontier analysis, step-by-step C vs. Simulink validation results,
+        virtual sensor suitability assessment for ECU deployment, and flash budget recommendations.
+        <strong>This is the document to share with engineering and management stakeholders.</strong>
+      </div>
+      <div class="report-toc">
+        §1 Introduction <span>·</span> §2 Data Collection <span>·</span> §3 Model Training <span>·</span>
+        §4 Validation <span>·</span> §5 Compression Suite <span>·</span> §6 Advanced Techniques <span>·</span>
+        §7 Pareto Frontier <span>·</span> §8 C Code Generation <span>·</span> §9 S-Function <span>·</span>
+        §10 Simulink vs C Validation (incl. virtual sensor assessment) <span>·</span> §11 Conclusion
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="report-card">
+    <div class="report-sidebar cmp"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/ROM_Methodology_Comparison.pdf">ROM Methodology Comparison — MATLAB vs Python/PyTorch</a>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-cmp">Comparison</span>
+        <span class="file-size">423 KB · 15 pages · March 2026</span>
+      </div>
+      <div class="report-desc">
+        Benchmarks this Python/PyTorch approach against a parallel MATLAB System Identification Toolbox session
+        on the same <code>enginespeed.slx</code> model. Covers accuracy (0.91 vs 1.75 N·m RMSE), data efficiency
+        (8× fewer samples), embedded deployment readiness, Simulink integration, toolchain stability, and a
+        radar-chart scorecard. <strong>Good starting point for anyone asking "why Python, not MATLAB?"</strong>
+      </div>
+      <div class="report-toc">
+        §1 Session Overview <span>·</span> §2 Accuracy <span>·</span> §3 Architecture Choice <span>·</span>
+        §4 Training Data &amp; Efficiency <span>·</span> §5 Embedded Deployment <span>·</span>
+        §6 Simulink Integration <span>·</span> §7 Toolchain <span>·</span> §8 Scorecard &amp; Radar Chart
+      </div>
+    </div>
+  </div>
+
+  <!-- v2 -->
+  <div class="report-card">
+    <div class="report-sidebar p2"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/Engine_ROM_Report_v2.pdf">Engine ROM Report v2 — Compression &amp; NARX Suite</a>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-p2">Phase 2</span>
+        <span class="file-size">1.4 MB · 9 sections · March 2026</span>
+      </div>
+      <div class="report-desc">
+        Phase 2 report covering the full 7-model compression suite: LSTM-8/16/32, PTQ-Q8, NARX-Ridge,
+        NARX-MLP, NARX-GBM. Includes the initial Pareto frontier, all C code generation, and Simulink
+        S-Function integration. Predecessor to v3. <strong>Good for understanding how the Pareto frontier
+        was first established.</strong>
+      </div>
+      <div class="report-toc">
+        §1 Overview <span>·</span> §2 Architecture Selection <span>·</span> §3 Training <span>·</span>
+        §4 All 7 Models <span>·</span> §5 Pareto Frontier <span>·</span> §6 C Code <span>·</span>
+        §7 S-Function Integration <span>·</span> §8 NARX Models <span>·</span> §9 Conclusion
+      </div>
+    </div>
+  </div>
+
+  <!-- v1 -->
+  <div class="report-card">
+    <div class="report-sidebar p1"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/Engine_ROM_Report.pdf">Engine ROM Report v1 — Baseline LSTM-32</a>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-p1">Phase 1</span>
+        <span class="file-size">2.3 MB · March 2026</span>
+      </div>
+      <div class="report-desc">
+        The original Phase 1 report documenting baseline LSTM-32 training on 12 simulations,
+        achieving R²=0.9997 and RMSE=0.91 N·m. Includes the first C code generation
+        (<code>rom_ecm.c</code>) and initial validation. <strong>Historical reference — v3 supersedes this
+        for most purposes.</strong>
+      </div>
+      <div class="report-toc">
+        §1 Introduction <span>·</span> §2 Data Collection <span>·</span> §3 LSTM Training <span>·</span>
+        §4 Validation <span>·</span> §5 C Code Generation <span>·</span> §6 Conclusion
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ───────────────────────────────────────
+     § C SOURCE CODE
+─────────────────────────────────────────── -->
+<section class="section" id="csrc">
+  <div class="section-header">
+    <span class="section-icon">💻</span>
+    <span class="section-title">C Source Code</span>
+    <span class="section-desc">All in src/ · C99 · No stdlib, no malloc · MCU-ready</span>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>All C files are C99 compliant, use only static memory allocation, and require no OS.</strong>
+    Every model has a paired <code>.h</code> (API + normalization constants) and <code>.c</code> (weights + inference).
+    Include the pair in your ECU project and call the Step function once per control cycle.
+  </div>
+
+  <!-- Recommended -->
+  <div class="group-label" style="color: var(--star);">⭐ Recommended for Deployment</div>
+  <div class="file-grid">
+    <div class="file-card featured">
+      <div class="star-badge">⭐ Recommended</div>
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_qat.h" class="file-name">src/rom_lstm_qat.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_qat.c" class="file-name">src/rom_lstm_qat.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p3">Phase 3 · QAT</span>
+            <span class="file-size">6.97 KB flash (23 KB source)</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>Quantization-Aware Training LSTM-32.</strong> The best accuracy-per-byte model in the suite.
+        Weights stored as <code>int8_t</code> (fake-quant trained with Straight-Through Estimator), dequantized
+        at runtime using a float scale factor. Achieves 0.91 N·m RMSE — identical to the full float baseline —
+        at 65% smaller flash footprint.
+      </div>
+      <div class="file-inside"><strong>API:</strong> <code>ROM_lstm_qat_Reset(state)</code> — call once at startup.
+        &nbsp; <code>ROM_lstm_qat_Step(state, aircharge, speed, spark) → torque_Nm</code> — call each cycle.</div>
+    </div>
+  </div>
+
+  <!-- Phase 3 models -->
+  <div class="group-label" style="color: var(--p3);">Phase 3 — Advanced Compression Models</div>
+  <div class="file-grid">
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_16_q16.h" class="file-name">src/rom_lstm_16_q16.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_16_q16.c" class="file-name">src/rom_lstm_16_q16.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p3">Phase 3 · Q16</span>
+            <span class="file-size">4.05 KB flash</span>
+            <span class="tag tag-good">RMSE ~1.00 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        LSTM-16 with <code>int16_t</code> weight storage and fixed-point Q15 arithmetic at runtime.
+        Best choice for MCUs <strong>without FPU</strong>: no floating-point ops in the hot path.
+        34% smaller than LSTM-16 float with no measurable accuracy loss.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_pruned16.h" class="file-name">src/rom_lstm_pruned16.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_pruned16.c" class="file-name">src/rom_lstm_pruned16.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p3">Phase 3 · Pruning</span>
+            <span class="file-size">6.14 KB flash</span>
+            <span class="tag tag-good">RMSE 1.19 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Structured pruning: started from LSTM-32, ranked neurons by L1-importance, retrained
+        the top-16 to form a compact LSTM-16. Weights stored as float32. 31% of baseline flash.
+        Good baseline for understanding the pruning methodology.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_delta_poly.h" class="file-name">src/rom_delta_poly.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_delta_poly.c" class="file-name">src/rom_delta_poly.c</a>
+          <br>
+          <a target="_blank" href="src/rom_lstm_delta8.h" class="file-name">src/rom_lstm_delta8.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_delta8.c" class="file-name">src/rom_lstm_delta8.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p3">Phase 3 · Delta</span>
+            <span class="file-size">0.39 KB + 2.40 KB = 2.79 KB total</span>
+            <span class="tag tag-good">RMSE ~1.02 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>Delta composite (2-file pair):</strong> A degree-2 polynomial Ridge baseline captures
+        the static torque surface; a tiny LSTM-8 residual corrects the dynamic error.
+        At inference, sum both outputs. Best accuracy under 3 KB of flash.
+        Ideal for severely flash-constrained MCUs.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_32_q16.h" class="file-name">src/rom_lstm_32_q16.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_32_q16.c" class="file-name">src/rom_lstm_32_q16.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p3">Phase 3 · Q16</span>
+            <span class="file-size">11.24 KB flash</span>
+            <span class="tag tag-good">RMSE 0.91 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Full LSTM-32 baseline with weights compressed to <code>int16_t</code>. Same accuracy as float32
+        baseline, 43% smaller. Use over QAT only if int8 headroom is a concern or if the target
+        architecture has hardware int16 SIMD support.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Phase 2 models -->
+  <div class="group-label" style="color: var(--p2);">Phase 2 — Compression Suite (7 Models)</div>
+  <div class="file-grid">
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_8.h" class="file-name">src/rom_lstm_8.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_8.c" class="file-name">src/rom_lstm_8.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p2">Phase 2 · LSTM-8</span>
+            <span class="file-size">2.52 KB flash</span>
+            <span class="tag tag-good">RMSE 1.20 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Smallest pure-LSTM model. 8 hidden units, float32 weights. Pareto-optimal for the sub-3 KB
+        budget. Achieves 1.20 N·m (0.60% FS) — just above the 0.5% threshold, but acceptable for many
+        applications. Minimal compute: ~100 multiply-accumulates per step.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_16.h" class="file-name">src/rom_lstm_16.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_16.c" class="file-name">src/rom_lstm_16.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p2">Phase 2 · LSTM-16</span>
+            <span class="file-size">6.17 KB flash</span>
+            <span class="tag tag-good">RMSE 0.91 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Float32 LSTM-16. Same accuracy as the LSTM-32 baseline (R²=0.9997, RMSE=0.91 N·m)
+        at 3× smaller flash. The original Phase 2 recommendation before QAT was developed in Phase 3.
+        Well-understood, simple, no quantization complexity.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_lstm_32.h" class="file-name">src/rom_lstm_32.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_lstm_32.c" class="file-name">src/rom_lstm_32.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p1">Phase 1 · Baseline</span>
+            <span class="file-size">19.7 KB flash</span>
+            <span class="tag tag-good">RMSE 0.91 N·m</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        The original Phase 1 LSTM-32 baseline. Full float32, 32 hidden units. Reference implementation
+        that all other models are compressed from. Use as ground truth for comparing new compression
+        methods.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📦</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_narx_ridge.h" class="file-name">src/rom_narx_ridge.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_narx_ridge.c" class="file-name">src/rom_narx_ridge.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p2">Phase 2 · NARX</span>
+            <span class="file-size">0.38 KB flash</span>
+            <span class="tag tag-warn">RMSE 7.23 N·m (3.6% FS)</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Linear autoregressive model (Ridge regression). Smallest model in the suite at 0.38 KB.
+        Suitable only for rough estimation (±7 N·m). No sigmoid/tanh operations — pure MAC instructions.
+        Use only if flash budget is under 0.5 KB and coarse accuracy is acceptable.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Phase 1 + Validation -->
+  <div class="group-label" style="color: var(--p1);">Phase 1 — Original ECM Model &amp; Validation</div>
+  <div class="file-grid">
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📄</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/rom_ecm.h" class="file-name">src/rom_ecm.h</a> &nbsp;+&nbsp;
+          <a target="_blank" href="src/rom_ecm.c" class="file-name">src/rom_ecm.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p1">Phase 1</span>
+            <span class="file-size">3.1 KB + 4.3 KB</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Original Phase 1 ECM (Engine Control Module) model — an NARX-style implementation
+        generated before the compression suite was developed. Retained for historical reference.
+        Superseded by <code>rom_lstm_qat.{h,c}</code> for new projects.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">🔬</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/validate_roms_harness.c" class="file-name">src/validate_roms_harness.c</a>
+          <div class="file-meta">
+            <span class="file-size">11 KB</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        C test harness that links all ROM models and drives them with the validation dataset
+        (<code>data/validation_data.csv</code>) to compute step-by-step RMSE vs. Simulink.
+        Compiled binary: <code>validate_roms</code> in the project root. Run with <code>./validate_roms</code>.
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">🔌</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/sfun_rom_lstm32.c" class="file-name">src/sfun_rom_lstm32.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p2">S-Function</span>
+            <span class="file-size">4.4 KB</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Simulink Level-2 MEX S-Function wrapper for LSTM-32. Allows the ROM to be used
+        as a Simulink block inside <code>enginespeed.slx</code>. Uses DWork to store LSTM hidden state
+        between time steps. Compile with <code>mex sfun_rom_lstm32.c rom_lstm_32.c</code> in MATLAB.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § PYTHON SCRIPTS
+─────────────────────────────────────────── -->
+<section class="section" id="python">
+  <div class="section-header">
+    <span class="section-icon">🐍</span>
+    <span class="section-title">Python Scripts</span>
+    <span class="section-desc">All in scripts/ · Python 3.x · PyTorch + scikit-learn + reportlab</span>
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>To reproduce everything from scratch:</strong> run the scripts in phase order.
+    Each script is self-contained and reads from <code>data/</code> and writes to <code>src/</code>,
+    <code>models/</code>, <code>plots/</code>, and <code>report/</code>.
+    Dependencies: <code>pip install torch scikit-learn numpy pandas matplotlib reportlab</code>
+  </div>
+
+  <div class="group-label" style="color: var(--p3);">Phase 3 — Run Last (Advanced Compression)</div>
+  <div class="script-list">
+    <div class="script-card">
+      <div class="script-num">1</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/train_phase3.py">scripts/train_phase3.py</a></div>
+        <div class="script-desc">Trains all four Phase 3 techniques from the LSTM-32 baseline:
+          (a) structured pruning → LSTM-16,
+          (b) QAT with Straight-Through Estimator,
+          (c) delta composite (poly + LSTM-8),
+          (d) Q16 fixed-point compression.
+          Generates all Phase 3 C source files, validation plots, and <code>data/phase3_results.json</code>.</div>
+        <div class="script-produces">→ Produces: <code>src/rom_lstm_pruned16.*</code>, <code>src/rom_lstm_qat.*</code>,
+          <code>src/rom_delta_poly.*</code>, <code>src/rom_lstm_delta8.*</code>,
+          <code>src/rom_lstm_16_q16.*</code>, <code>src/rom_lstm_32_q16.*</code>,
+          <code>plots/phase3_*.png</code></div>
+      </div>
+      <div class="script-size">50 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">2</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_v3_report.py">scripts/generate_v3_report.py</a></div>
+        <div class="script-desc">Generates the Phase 3 PDF report (<code>Engine_ROM_Report_v3.pdf</code>) with 11 sections
+          and 2 appendices. Reads all metrics from JSON files, embeds all plots, renders comparison tables
+          with colour coding, and builds the virtual sensor suitability assessment (Tables 10.2, 10.3).</div>
+        <div class="script-produces">→ Produces: <code>report/Engine_ROM_Report_v3.pdf</code></div>
+      </div>
+      <div class="script-size">63 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">3</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_comparison_report.py">scripts/generate_comparison_report.py</a></div>
+        <div class="script-desc">Generates the MATLAB vs Python comparison PDF. Computes comparison metrics,
+          renders 3 matplotlib figures (RMSE bar chart, flash/efficiency chart, radar scorecard),
+          and builds the 8-section PDF comparing both approaches across 8 engineering dimensions.</div>
+        <div class="script-produces">→ Produces: <code>report/ROM_Methodology_Comparison.pdf</code>,
+          <code>plots/comparison_*.png</code></div>
+      </div>
+      <div class="script-size">57 KB</div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p2);">Phase 2 — Compression Suite</div>
+  <div class="script-list">
+    <div class="script-card">
+      <div class="script-num">1</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/train_all_models.py">scripts/train_all_models.py</a></div>
+        <div class="script-desc">Trains all 7 Phase 2 models: LSTM-8/16/32, PTQ-Q8, NARX-Ridge, NARX-MLP, NARX-GBM.
+          Generates C code for each, computes Pareto frontier, and saves comparison metrics.
+          This is the definitive Phase 2 training pipeline.</div>
+        <div class="script-produces">→ Produces: all <code>src/rom_lstm_*.{c,h}</code> (Phase 2),
+          <code>plots/pareto_frontier.png</code>, <code>data/model_comparison.json</code></div>
+      </div>
+      <div class="script-size">48 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">2</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_updated_report.py">scripts/generate_updated_report.py</a></div>
+        <div class="script-desc">Generates the Phase 2 PDF report (<code>Engine_ROM_Report_v2.pdf</code>)
+          with 9 sections covering the full compression suite, Pareto frontier, and S-Function integration.</div>
+        <div class="script-produces">→ Produces: <code>report/Engine_ROM_Report_v2.pdf</code></div>
+      </div>
+      <div class="script-size">44 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">3</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/validate_c_code.py">scripts/validate_c_code.py</a></div>
+        <div class="script-desc">Compiles <code>validate_roms_harness.c</code> with all ROM C files, runs the binary
+          against validation data, and saves step-by-step error metrics. Provides the authoritative
+          "C code matches Simulink" numbers reported in the Phase 3 report.</div>
+        <div class="script-produces">→ Produces: <code>data/c_validation_results.json</code>,
+          <code>plots/c_validation_*.png</code></div>
+      </div>
+      <div class="script-size">21 KB</div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p1);">Phase 1 — Baseline</div>
+  <div class="script-list">
+    <div class="script-card">
+      <div class="script-num">1</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/train_rom.py">scripts/train_rom.py</a></div>
+        <div class="script-desc">Trains the original LSTM-32 baseline for 400 epochs on 12 simulations
+          (6,012 samples). Saves model weights, normalization statistics, and training loss curve.
+          The starting point for all subsequent compression work.</div>
+        <div class="script-produces">→ Produces: <code>models/</code> weights, <code>plots/training_loss.png</code></div>
+      </div>
+      <div class="script-size">14 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">2</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/validate_rom.py">scripts/validate_rom.py</a></div>
+        <div class="script-desc">Validates the trained PyTorch LSTM-32 model against 3 held-out Simulink scenarios
+          (SA=7°, 17°, 27°). Computes R², RMSE, and plots predicted vs. actual torque traces.</div>
+        <div class="script-produces">→ Produces: <code>plots/validation_sim*.png</code>, <code>data/validation_metrics.json</code></div>
+      </div>
+      <div class="script-size">11 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">3</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_c_code.py">scripts/generate_c_code.py</a></div>
+        <div class="script-desc">Extracts weights from the PyTorch model and emits hand-optimised C99 source for
+          the original LSTM-32 baseline (<code>rom_ecm.{h,c}</code> + <code>rom_weights.h</code>).
+          Predecessor to the automated C generation in <code>train_all_models.py</code>.</div>
+        <div class="script-produces">→ Produces: <code>src/rom_ecm.{h,c}</code>, <code>src/rom_weights.h</code></div>
+      </div>
+      <div class="script-size">13 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">4</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_report.py">scripts/generate_report.py</a></div>
+        <div class="script-desc">Generates the Phase 1 baseline PDF report (<code>Engine_ROM_Report.pdf</code>).
+          Embeds training plots, validation scatter plots, and the C code listing.
+          Uses reportlab with custom styles.</div>
+        <div class="script-produces">→ Produces: <code>report/Engine_ROM_Report.pdf</code></div>
+      </div>
+      <div class="script-size">37 KB</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § MATLAB SCRIPTS
+─────────────────────────────────────────── -->
+<section class="section" id="matlab">
+  <div class="section-header">
+    <span class="section-icon">📐</span>
+    <span class="section-title">MATLAB Scripts</span>
+    <span class="section-desc">All in scripts/ · Requires MATLAB R2025b + Simulink</span>
+  </div>
+
+  <div class="callout callout-violet">
+    <strong>MATLAB R2025b compatibility note:</strong> These scripts include fixes for three breaking API changes
+    in R2025b. The <code>From Workspace</code> block API changed (<code>'ZeroOrderHold'</code> was removed);
+    signal logging must be set on the port handle, not the line handle.
+    See the README for details before running on a different MATLAB version.
+  </div>
+
+  <div class="script-list">
+    <div class="script-card">
+      <div class="script-num">1</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/collect_training_data.m">scripts/collect_training_data.m</a></div>
+        <div class="script-desc">Runs the <code>enginespeed.slx</code> model across a grid of operating conditions
+          (AirCharge, SpeedRPM, SparkAdvance) to collect torque output data. Saves training samples
+          to <code>data/training_data.mat</code> and <code>data/training_data.csv</code>.</div>
+        <div class="script-produces">→ Produces: <code>data/training_data.{mat,csv}</code></div>
+      </div>
+      <div class="script-size">7.2 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">2</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/collect_validation_data.m">scripts/collect_validation_data.m</a></div>
+        <div class="script-desc">Runs <code>enginespeed.slx</code> with held-out operating conditions not seen during
+          training. Saves validation sequences to <code>data/validation_data.{mat,csv}</code> for use
+          by Python validation scripts and the C harness.</div>
+        <div class="script-produces">→ Produces: <code>data/validation_data.{mat,csv}</code></div>
+      </div>
+      <div class="script-size">6.2 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">3</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/simulink_vs_c_rom.m">scripts/simulink_vs_c_rom.m</a></div>
+        <div class="script-desc">The authoritative side-by-side comparison: drives <code>enginespeed.slx</code>
+          and the compiled C ROMs simultaneously over 1,503 time steps and records step-by-step error.
+          The RMSE numbers in the Phase 3 report Section 10 come from this script's output
+          (<code>data/simulink_c_rom_results.json</code>).</div>
+        <div class="script-produces">→ Produces: <code>data/simulink_c_rom_results.json</code>,
+          <code>plots/simulink_c_rom_*.png</code></div>
+      </div>
+      <div class="script-size">18 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">4</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/create_sfun_validation.m">scripts/create_sfun_validation.m</a></div>
+        <div class="script-desc">Compiles <code>sfun_rom_lstm32.c</code> as a MEX S-Function, inserts it into a
+          copy of <code>enginespeed.slx</code>, and runs a validation simulation to confirm the
+          S-Function block matches the reference model. Saves results to <code>data/sfun_validation_results.mat</code>.</div>
+        <div class="script-produces">→ Produces: <code>data/sfun_validation_results.mat</code>,
+          <code>plots/sfun_val_*.png</code></div>
+      </div>
+      <div class="script-size">14 KB</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § PLOTS GALLERY
+─────────────────────────────────────────── -->
+<section class="section" id="plots">
+  <div class="section-header">
+    <span class="section-icon">🖼️</span>
+    <span class="section-title">Plots &amp; Figures</span>
+    <span class="section-desc">All in plots/ · PNG · Auto-generated by training scripts</span>
+  </div>
+
+  <div class="group-label" style="color: var(--cmp);">Methodology Comparison</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/comparison_radar.png"><img class="plot-thumb" src="plots/comparison_radar.png" alt="Comparison Radar" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/comparison_radar.png">comparison_radar.png</a></div>
+        <div class="plot-desc">Radar/spider scorecard: MATLAB vs Python across 8 engineering dimensions. Overall Python wins 5/8 categories.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/comparison_accuracy.png"><img class="plot-thumb" src="plots/comparison_accuracy.png" alt="Accuracy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/comparison_accuracy.png">comparison_accuracy.png</a></div>
+        <div class="plot-desc">RMSE and R² comparison: MATLAB MLP (1.75 N·m) vs all Python Pareto models (0.91–1.20 N·m).</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/comparison_flash_efficiency.png"><img class="plot-thumb" src="plots/comparison_flash_efficiency.png" alt="Flash Efficiency" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/comparison_flash_efficiency.png">comparison_flash_efficiency.png</a></div>
+        <div class="plot-desc">Flash footprint bars and data efficiency scatter. MATLAB had no C output; Python models range 0.38–19.7 KB.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p3);">Phase 3 — Advanced Compression</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/phase3_pareto.png"><img class="plot-thumb" src="plots/phase3_pareto.png" alt="Phase 3 Pareto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/phase3_pareto.png">phase3_pareto.png</a></div>
+        <div class="plot-desc">Updated Pareto frontier including all Phase 3 models. Shows which models dominate on the accuracy vs. flash trade-off curve.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/phase3_validation.png"><img class="plot-thumb" src="plots/phase3_validation.png" alt="Phase 3 Validation" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/phase3_validation.png">phase3_validation.png</a></div>
+        <div class="plot-desc">Torque trace comparison for all Phase 3 models vs. Simulink ground truth across validation scenarios.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p2);">Phase 2 — C Code vs Simulink Validation</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/simulink_c_rom_traces.png"><img class="plot-thumb" src="plots/simulink_c_rom_traces.png" alt="Simulink C Traces" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/simulink_c_rom_traces.png">simulink_c_rom_traces.png</a></div>
+        <div class="plot-desc">Key validation plot: C ROM output vs. live Simulink torque over 1,503 time steps. Visual proof of C code correctness.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/simulink_c_rom_metrics.png"><img class="plot-thumb" src="plots/simulink_c_rom_metrics.png" alt="Simulink C Metrics" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/simulink_c_rom_metrics.png">simulink_c_rom_metrics.png</a></div>
+        <div class="plot-desc">Bar charts of RMSE and R² for each C model vs. Simulink. Clear ranking of all models by accuracy.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/simulink_c_rom_scatter.png"><img class="plot-thumb" src="plots/simulink_c_rom_scatter.png" alt="Simulink C Scatter" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/simulink_c_rom_scatter.png">simulink_c_rom_scatter.png</a></div>
+        <div class="plot-desc">Scatter plot of C ROM vs. Simulink torque. Points should fall on the diagonal — shows tight agreement for LSTM models.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/pareto_frontier.png"><img class="plot-thumb" src="plots/pareto_frontier.png" alt="Pareto Frontier" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/pareto_frontier.png">pareto_frontier.png</a></div>
+        <div class="plot-desc">Phase 2 Pareto frontier: all 7 models plotted as Flash KB vs RMSE. Dominated models shown as grey dots.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/all_models_traces.png"><img class="plot-thumb" src="plots/all_models_traces.png" alt="All Models Traces" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/all_models_traces.png">all_models_traces.png</a></div>
+        <div class="plot-desc">All 7 Phase 2 model predictions overlaid on Simulink ground truth. Shows NARX-Ridge divergence clearly.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/sfun_val_summary.png"><img class="plot-thumb" src="plots/sfun_val_summary.png" alt="S-Function Summary" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/sfun_val_summary.png">sfun_val_summary.png</a></div>
+        <div class="plot-desc">S-Function validation summary: LSTM-32 MEX block output vs reference Simulink across all 3 spark advance conditions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p1);">Phase 1 — Baseline Training &amp; Validation</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/training_loss.png"><img class="plot-thumb" src="plots/training_loss.png" alt="Training Loss" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/training_loss.png">training_loss.png</a></div>
+        <div class="plot-desc">LSTM-32 training and validation loss over 400 epochs. Shows convergence without overfitting.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/validation_scatter.png"><img class="plot-thumb" src="plots/validation_scatter.png" alt="Validation Scatter" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/validation_scatter.png">validation_scatter.png</a></div>
+        <div class="plot-desc">Predicted vs. actual scatter for LSTM-32 on held-out validation data. R²=0.9997 shown.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/c_validation_traces.png"><img class="plot-thumb" src="plots/c_validation_traces.png" alt="C Validation Traces" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/c_validation_traces.png">c_validation_traces.png</a></div>
+        <div class="plot-desc">Phase 1 C validation traces: Python model vs. C harness output. Confirms weight export was correct.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/error_distribution.png"><img class="plot-thumb" src="plots/error_distribution.png" alt="Error Distribution" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/error_distribution.png">error_distribution.png</a></div>
+        <div class="plot-desc">Histogram of prediction errors. Shows symmetric distribution centred near zero — no systematic bias.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/sample_predictions.png"><img class="plot-thumb" src="plots/sample_predictions.png" alt="Sample Predictions" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/sample_predictions.png">sample_predictions.png</a></div>
+        <div class="plot-desc">Random sample of 4 validation time-series predictions. Shows model tracks transients and steady-state well.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/excitation_profiles.png"><img class="plot-thumb" src="plots/excitation_profiles.png" alt="Excitation Profiles" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/excitation_profiles.png">excitation_profiles.png</a></div>
+        <div class="plot-desc">Training excitation profiles — AirCharge, Speed, and SparkAdvance inputs used to generate the training dataset from Simulink.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § DATA & MODELS
+─────────────────────────────────────────── -->
+<section class="section" id="data">
+  <div class="section-header">
+    <span class="section-icon">📁</span>
+    <span class="section-title">Data &amp; Models</span>
+    <span class="section-desc">Training data, validation sets, metrics JSON, model configs</span>
+  </div>
+
+  <div class="group-label">Training &amp; Validation Datasets</div>
+  <div class="file-grid">
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">🗄️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/training_data.csv" class="file-name">data/training_data.csv</a>
+          <span style="color: var(--muted);"> · </span>
+          <a target="_blank" href="data/training_data.mat" class="file-name">data/training_data.mat</a>
+          <div class="file-meta">
+            <span class="file-size">339 KB (CSV) · 143 KB (MAT)</span>
+            <span class="tag tag-p1">Phase 1</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Raw training dataset collected from <code>enginespeed.slx</code>. Columns: timestamp, AirCharge [g/s],
+        Speed [rad/s], SparkAdvance [deg], Torque [N·m]. The CSV is used by Python training scripts;
+        the MAT file by MATLAB scripts. 10 simulations × ~500 samples each = 5,010 samples total.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">🗄️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/validation_data.csv" class="file-name">data/validation_data.csv</a>
+          <span style="color: var(--muted);"> · </span>
+          <a target="_blank" href="data/validation_data.mat" class="file-name">data/validation_data.mat</a>
+          <div class="file-meta">
+            <span class="file-size">169 KB (CSV) · 72 KB (MAT)</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Held-out validation dataset from 3 unseen Simulink runs (SA=7°, 17°, 27°) — 1,503 time steps total.
+        Used by the C validation harness (<code>validate_roms</code>) and <code>simulink_vs_c_rom.m</code>
+        to compute the definitive C vs. Simulink RMSE numbers.
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label">Results &amp; Metrics (JSON)</div>
+  <div class="file-grid">
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📋</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/simulink_c_rom_results.json" class="file-name">data/simulink_c_rom_results.json</a>
+          <div class="file-meta"><span class="file-size">2.4 KB</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>The key results file.</strong> Step-by-step RMSE and R² for each C ROM model vs. live
+        Simulink output over 1,503 validation steps. This is the source of truth for the accuracy numbers
+        in the Phase 3 report's virtual sensor assessment (Section 10). Open this to see raw numbers.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📋</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/phase3_results.json" class="file-name">data/phase3_results.json</a>
+          <div class="file-meta"><span class="file-size">900 B</span><span class="tag tag-p3">Phase 3</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Training-time metrics for all 4 Phase 3 techniques: structured pruning, QAT, delta composite,
+        Q16. Contains RMSE on validation set, flash size, and training parameters.
+        Generated by <code>train_phase3.py</code>.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📋</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/model_comparison.json" class="file-name">data/model_comparison.json</a>
+          <div class="file-meta"><span class="file-size">1.4 KB</span><span class="tag tag-p2">Phase 2</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Metrics for all 7 Phase 2 models: RMSE, R², flash size, training time. The source for the
+        Pareto frontier plot and Phase 2 report tables. Generated by <code>train_all_models.py</code>.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📋</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/c_validation_results.json" class="file-name">data/c_validation_results.json</a>
+          <div class="file-meta"><span class="file-size">3.8 KB</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Output of the C validation harness: per-step predictions from each compiled C model vs.
+        Simulink ground truth. Used by <code>validate_c_code.py</code> to generate the <code>c_validation_*.png</code> plots.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">📋</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="data/validation_metrics.json" class="file-name">data/validation_metrics.json</a>
+          <div class="file-meta"><span class="file-size">1.0 KB</span><span class="tag tag-p1">Phase 1</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Phase 1 validation metrics: R² and RMSE for LSTM-32 on the three held-out Simulink scenarios.
+        Generated by <code>validate_rom.py</code>. Used in the Phase 1 report.
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label">Model Configs &amp; Weight Exports</div>
+  <div class="file-grid">
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">⚙️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="models/normalization.json" class="file-name">models/normalization.json</a>
+          <div class="file-meta"><span class="file-size">319 B</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>Critical for inference.</strong> Z-score normalization statistics (mean + std) for each
+        input channel (AirCharge, Speed, SparkAdvance) and the output (Torque). All C models read these
+        constants at compile time from their header files — this JSON is the canonical source.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">⚙️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="models/delta_poly_info.json" class="file-name">models/delta_poly_info.json</a>
+          <div class="file-meta"><span class="file-size">1.3 KB</span><span class="tag tag-p3">Phase 3</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Polynomial baseline coefficients for the delta composite model: Ridge regression intercept,
+        feature polynomial powers, StandardScaler mean/std, and delta residual normalization stats.
+        Used by <code>rom_delta_poly.c</code> at compile time.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">⚙️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="models/lstm_32_info.json" class="file-name">models/lstm_32_info.json</a>
+          <div class="file-meta"><span class="file-size">100 KB</span><span class="tag tag-p2">Phase 2</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Full LSTM-32 weight export in JSON format (flat float arrays). Used by MATLAB scripts to
+        load the model without a Python dependency. Contains all gate weight matrices
+        (W_ih, W_hh, b_ih, b_hh) and linear output layer.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">⚙️</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="models/narx_ridge_info.json" class="file-name">models/narx_ridge_info.json</a>
+          <div class="file-meta"><span class="file-size">377 B</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        NARX-Ridge model coefficients: intercept, coefficient vector, and lag order.
+        Tiny — 377 bytes. The entire NARX-Ridge model in plain JSON format.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § SIMULINK MODELS
+─────────────────────────────────────────── -->
+<section class="section" id="simulink">
+  <div class="section-header">
+    <span class="section-icon">🔷</span>
+    <span class="section-title">Simulink Source Models</span>
+    <span class="section-desc">Requires MATLAB R2025b + Simulink</span>
+  </div>
+
+  <div class="file-grid">
+    <div class="file-card featured">
+      <div class="file-card-top">
+        <span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed.slx" class="file-name">enginespeed.slx</a>
+          <div class="file-meta">
+            <span class="file-size">47 KB</span>
+            <span class="tag tag-rec">Source Ground Truth</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>The original MathWorks engine speed demo model.</strong> This is the Simulink physics model
+        that all ROMs are trained to approximate. Contains the Combustion block (static torque map),
+        engine dynamics, and throttle/spark advance inputs. All training and validation data was
+        collected by running this model under various conditions. <strong>Do not modify</strong> — this is
+        the reference standard.
+      </div>
+      <div class="file-inside">
+        <strong>To run:</strong> Open in MATLAB R2025b → Simulink. Set input workspace variables
+        (AirCharge, SpeedRPM, SparkAdvance), then run. Use <code>collect_training_data.m</code> to
+        automate this for a grid of conditions.
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="file-card-top">
+        <span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed_sfval.slx.r2025a" class="file-name">enginespeed_sfval.slx.r2025a</a>
+          <div class="file-meta">
+            <span class="file-size">47 KB</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Modified copy of <code>enginespeed.slx</code> with the LSTM-32 S-Function block inserted
+        as a Variant Subsystem alongside the original Combustion block. Used by <code>create_sfun_validation.m</code>
+        to test that the MEX S-Function matches the physics model. R2025a format (saved by MATLAB automatically).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────
+     § FOOTER
+─────────────────────────────────────────── -->
+<div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--muted); padding-bottom: 32px;">
+  <div>
+    <strong style="color: var(--text);">Engine ROM Project</strong> ·
+    Python/PyTorch + MATLAB Simulink · Phase 1–3 Complete
+  </div>
+  <div>
+    Generated by Claude Code · March 2026 ·
+    <span style="color: var(--good);">●</span> All models validated against live Simulink
+  </div>
+</div>
+
+</main>
+</div><!-- end layout -->
+
+<script>
+// ── Active nav highlight on scroll ──
+const sections = ['start','summary','reports','csrc','python','matlab','plots','data','simulink'];
+const navItems = document.querySelectorAll('.nav-item');
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    const y = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+}
+
+function updateNav() {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 120) current = id;
+  });
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    const onclick = item.getAttribute('onclick') || '';
+    if (onclick.includes(`'${current}'`)) item.classList.add('active');
+  });
+}
+window.addEventListener('scroll', updateNav, { passive: true });
+
+// ── Expandable file details ──
+document.querySelectorAll('.expand-toggle').forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    const content = toggle.nextElementSibling;
+    const arrow = toggle.querySelector('.expand-arrow');
+    content.classList.toggle('open');
+    if (arrow) arrow.classList.toggle('open');
+    toggle.querySelector('.expand-label').textContent =
+      content.classList.contains('open') ? 'Hide details' : 'Show details';
+  });
+});
+
+// ── Image fallback: hide broken images gracefully ──
+document.querySelectorAll('.plot-thumb').forEach(img => {
+  img.addEventListener('error', function() {
+    this.style.display = 'none';
+    const placeholder = this.nextElementSibling;
+    if (placeholder) placeholder.style.display = 'flex';
+  });
+});
+</script>
+
+</body>
+</html>

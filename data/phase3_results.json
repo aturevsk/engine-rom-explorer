@@ -1,0 +1,42 @@
+{
+  "pruned_lstm16": {
+    "method": "Structured Pruning",
+    "val_rmse": 1.1903,
+    "val_r2": 0.99946,
+    "flash_kb": 6.141,
+    "n_params": 385,
+    "label": "LSTM-16 Pruned"
+  },
+  "qat_lstm32": {
+    "method": "QAT int8",
+    "val_rmse": 0.9104,
+    "val_r2": 0.99968,
+    "flash_kb": 6.973,
+    "n_params": 1281,
+    "label": "LSTM-32 QAT"
+  },
+  "delta_composite": {
+    "method": "Delta Learning",
+    "val_rmse": 0.9654,
+    "val_r2": 0.99964,
+    "flash_kb": 2.789,
+    "flash_poly_kb": 0.387,
+    "flash_lstm8_kb": 2.402,
+    "n_params": 129,
+    "label": "Delta (Poly+LSTM-8)"
+  },
+  "lstm16_q16": {
+    "method": "Fixed-Point Q16",
+    "val_rmse": 0.9142,
+    "val_r2": 0.99966,
+    "flash_kb": 4.051,
+    "label": "LSTM-16 Q16"
+  },
+  "lstm32_q16": {
+    "method": "Fixed-Point Q16",
+    "val_rmse": 0.91,
+    "val_r2": 0.9997,
+    "flash_kb": 11.242,
+    "label": "LSTM-32 Q16"
+  }
+}

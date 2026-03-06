@@ -1,0 +1,65 @@
+{
+  "lstm_8": {
+    "val_rmse": 1.134467485693577,
+    "val_r2": 0.9994779785772835,
+    "n_params": 425,
+    "flash_kb": 2.5234375,
+    "label": "LSTM-8",
+    "color": "#1f77b4",
+    "marker": "o"
+  },
+  "lstm_16": {
+    "val_rmse": 0.9141629801157721,
+    "val_r2": 0.9996565146616336,
+    "n_params": 1361,
+    "flash_kb": 6.171875,
+    "label": "LSTM-16",
+    "color": "#ff7f0e",
+    "marker": "s"
+  },
+  "lstm_32": {
+    "val_rmse": 0.91,
+    "val_r2": 0.9997,
+    "n_params": 4769,
+    "flash_kb": 19.66796875,
+    "label": "LSTM-32\n(baseline)",
+    "color": "#2ca02c",
+    "marker": "D"
+  },
+  "lstm_32_q8": {
+    "val_rmse": 0.92064055258535,
+    "val_r2": 0.9996526538257889,
+    "n_params": 4769,
+    "flash_kb": 8.0234375,
+    "label": "LSTM-32-Q8",
+    "color": "#9467bd",
+    "marker": "P"
+  },
+  "narx_ridge": {
+    "val_rmse": 5.88212938272367,
+    "val_r2": 0.9862908510094043,
+    "n_params": 12,
+    "flash_kb": 0.37890625,
+    "label": "NARX-Ridge",
+    "color": "#d62728",
+    "marker": "^"
+  },
+  "narx_mlp": {
+    "val_rmse": 4.089133083136061,
+    "val_r2": 0.9930952577490758,
+    "n_params": 337,
+    "flash_kb": 3.46875,
+    "label": "NARX-MLP",
+    "color": "#8c564b",
+    "marker": "v"
+  },
+  "narx_gbm": {
+    "val_rmse": 14.845279995813755,
+    "val_r2": 0.9164395653697882,
+    "n_params": 750,
+    "flash_kb": 11.953125,
+    "label": "NARX-GBM",
+    "color": "#e377c2",
+    "marker": "*"
+  }
+}

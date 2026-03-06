@@ -1,0 +1,192 @@
+{
+  "description": "C code validation: compiled ROM binaries run on Simulink-collected validation data (AirCharge, Speed, SparkAdvance as inputs; ground truth = Simulink Torque output)",
+  "n_validation_steps": 3006,
+  "n_simulations": 6,
+  "overall_metrics": {
+    "narx_ridge": {
+      "rmse_Nm": 7.6609,
+      "r2": 0.977624,
+      "n_steps": 3006,
+      "flash_kb": 0.38,
+      "label": "NARX-Ridge (0.38 KB)"
+    },
+    "lstm_8": {
+      "rmse_Nm": 1.1637,
+      "r2": 0.999484,
+      "n_steps": 3006,
+      "flash_kb": 2.52,
+      "label": "LSTM-8 (2.52 KB)"
+    },
+    "delta": {
+      "rmse_Nm": 0.9654,
+      "r2": 0.999645,
+      "n_steps": 3006,
+      "flash_kb": 2.79,
+      "label": "Delta Composite (2.79 KB)"
+    },
+    "lstm_16_q16": {
+      "rmse_Nm": 0.9259,
+      "r2": 0.999673,
+      "n_steps": 3006,
+      "flash_kb": 4.05,
+      "label": "LSTM-16 Q16 (4.05 KB)"
+    },
+    "qat_lstm32": {
+      "rmse_Nm": 0.9105,
+      "r2": 0.999684,
+      "n_steps": 3006,
+      "flash_kb": 6.97,
+      "label": "QAT LSTM-32 (6.97 KB)"
+    }
+  },
+  "per_sim_metrics": {
+    "narx_ridge": {
+      "1": {
+        "rmse_Nm": 6.8205,
+        "r2": 0.976971
+      },
+      "2": {
+        "rmse_Nm": 6.8872,
+        "r2": 0.980386
+      },
+      "3": {
+        "rmse_Nm": 7.2433,
+        "r2": 0.977022
+      },
+      "4": {
+        "rmse_Nm": 8.2028,
+        "r2": 0.978687
+      },
+      "5": {
+        "rmse_Nm": 7.5963,
+        "r2": 0.975757
+      },
+      "6": {
+        "rmse_Nm": 8.9847,
+        "r2": 0.976787
+      }
+    },
+    "lstm_8": {
+      "1": {
+        "rmse_Nm": 1.096,
+        "r2": 0.999405
+      },
+      "2": {
+        "rmse_Nm": 0.8696,
+        "r2": 0.999687
+      },
+      "3": {
+        "rmse_Nm": 0.9145,
+        "r2": 0.999634
+      },
+      "4": {
+        "rmse_Nm": 0.9515,
+        "r2": 0.999713
+      },
+      "5": {
+        "rmse_Nm": 1.5016,
+        "r2": 0.999053
+      },
+      "6": {
+        "rmse_Nm": 1.4736,
+        "r2": 0.999376
+      }
+    },
+    "delta": {
+      "1": {
+        "rmse_Nm": 0.9617,
+        "r2": 0.999542
+      },
+      "2": {
+        "rmse_Nm": 0.816,
+        "r2": 0.999725
+      },
+      "3": {
+        "rmse_Nm": 0.994,
+        "r2": 0.999567
+      },
+      "4": {
+        "rmse_Nm": 0.8801,
+        "r2": 0.999755
+      },
+      "5": {
+        "rmse_Nm": 1.1029,
+        "r2": 0.999489
+      },
+      "6": {
+        "rmse_Nm": 1.0109,
+        "r2": 0.999706
+      }
+    },
+    "lstm_16_q16": {
+      "1": {
+        "rmse_Nm": 1.005,
+        "r2": 0.9995
+      },
+      "2": {
+        "rmse_Nm": 0.8021,
+        "r2": 0.999734
+      },
+      "3": {
+        "rmse_Nm": 0.838,
+        "r2": 0.999692
+      },
+      "4": {
+        "rmse_Nm": 0.7043,
+        "r2": 0.999843
+      },
+      "5": {
+        "rmse_Nm": 1.1385,
+        "r2": 0.999455
+      },
+      "6": {
+        "rmse_Nm": 0.9978,
+        "r2": 0.999714
+      }
+    },
+    "qat_lstm32": {
+      "1": {
+        "rmse_Nm": 0.9866,
+        "r2": 0.999518
+      },
+      "2": {
+        "rmse_Nm": 0.7276,
+        "r2": 0.999781
+      },
+      "3": {
+        "rmse_Nm": 0.8214,
+        "r2": 0.999704
+      },
+      "4": {
+        "rmse_Nm": 0.7315,
+        "r2": 0.999831
+      },
+      "5": {
+        "rmse_Nm": 1.0758,
+        "r2": 0.999514
+      },
+      "6": {
+        "rmse_Nm": 1.0506,
+        "r2": 0.999683
+      }
+    }
+  },
+  "c_vs_python_parity": {
+    "lstm_8": {
+      "max_abs_err_Nm": 6.0806640618693564e-05,
+      "mean_abs_err_Nm": 9.878339837204963e-06,
+      "note": "C vs Python float32 LSTM-8"
+    },
+    "lstm_16_q16": {
+      "max_abs_err_Nm": 0.003570378906260885,
+      "mean_abs_err_Nm": 0.0007830714508280263,
+      "note": "C Q16 vs Python float32 LSTM-16 (Q16 rounding error expected)"
+    }
+  },
+  "plots": [
+    "plots/c_validation_traces.png",
+    "plots/c_validation_scatter.png",
+    "plots/c_validation_metrics.png",
+    "plots/c_validation_error.png"
+  ]
+}
