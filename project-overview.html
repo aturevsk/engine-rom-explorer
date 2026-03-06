@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Project Overview — Engine ROM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#0f172a;color:#e2e8f0;line-height:1.7;font-size:15px;}
+.wrap{max-width:860px;margin:0 auto;padding:40px 24px 80px;}
+.back{display:inline-flex;align-items:center;gap:8px;color:#38bdf8;
+  font-size:13px;text-decoration:none;margin-bottom:32px;
+  padding:6px 14px;border:1px solid #1e3a5f;border-radius:8px;
+  background:#0d1929;transition:background .15s;}
+.back:hover{background:#1e293b;}
+h1{font-size:28px;font-weight:800;margin-bottom:4px;}
+.sub{color:#64748b;font-size:14px;margin-bottom:32px;}
+h2{font-size:18px;font-weight:700;color:#38bdf8;
+  padding:24px 0 10px;border-bottom:1px solid #1e293b;margin-bottom:16px;}
+h3{font-size:15px;font-weight:700;color:#94a3b8;margin:18px 0 6px;}
+p{color:#cbd5e1;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:13px;}
+th{background:#1e293b;padding:9px 14px;text-align:left;font-weight:600;
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#64748b;
+  border-bottom:1px solid #334155;}
+td{padding:8px 14px;border-bottom:1px solid #1e293b;vertical-align:top;}
+td:first-child{font-family:'SF Mono','Consolas',monospace;font-size:12px;
+  color:#38bdf8;white-space:nowrap;}
+tr:hover td{background:#1e293b;}
+code{font-family:'SF Mono','Consolas',monospace;font-size:12px;
+  background:#1e293b;padding:2px 6px;border-radius:4px;color:#38bdf8;}
+pre{background:#0d1929;border:1px solid #1e293b;border-radius:8px;
+  padding:16px;overflow-x:auto;font-size:12px;color:#94a3b8;margin:12px 0 20px;}
+.tag{display:inline-flex;padding:2px 8px;border-radius:10px;font-size:11px;
+  font-weight:700;}
+.t1{background:rgba(96,165,250,.12);color:#60a5fa;}
+.t2{background:rgba(52,211,153,.12);color:#34d399;}
+.t3{background:rgba(167,139,250,.12);color:#a78bfa;}
+.tr{background:rgba(253,224,71,.12);color:#fde047;}
+.callout{border-left:3px solid #38bdf8;background:rgba(56,189,248,.06);
+  padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:13px;color:#bae6fd;}
+ul{padding-left:20px;margin-bottom:12px;}
+li{color:#cbd5e1;margin-bottom:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back">← Back to Explorer</a>
+
+<h1>⚙️ Engine ROM — Project Overview</h1>
+<p class="sub">Reduced-Order Model of <code>enginespeed.slx</code> · Python/PyTorch LSTM → C99 Embedded Code · 3 Phases</p>
+
+<!-- ── QUICK RESULTS ── -->
+<h2>Quick Results</h2>
+<table>
+  <tr><th>Model</th><th>Phase</th><th>Flash (KB)</th><th>RMSE (N·m)</th><th>Status</th></tr>
+  <tr><td>narx_ridge</td><td><span class="tag t2">Phase 2</span></td><td>0.38</td><td>7.23</td><td>Conditional</td></tr>
+  <tr><td>lstm_8</td><td><span class="tag t2">Phase 2</span></td><td>2.52</td><td>1.20</td><td>✓ Suitable</td></tr>
+  <tr><td>delta_composite</td><td><span class="tag t3">Phase 3</span></td><td>2.79</td><td>~1.02</td><td>✓ Suitable</td></tr>
+  <tr><td>lstm_16_q16</td><td><span class="tag t3">Phase 3</span></td><td>4.05</td><td>~1.00</td><td>✓ Suitable</td></tr>
+  <tr><td>lstm_pruned16</td><td><span class="tag t3">Phase 3</span></td><td>6.14</td><td>1.19</td><td>✓ Suitable</td></tr>
+  <tr><td><strong>lstm_qat ⭐</strong></td><td><span class="tag t3">Phase 3</span></td><td>6.97</td><td><strong>0.91</strong></td><td><span class="tag tr">⭐ Recommended</span></td></tr>
+  <tr><td>lstm_16</td><td><span class="tag t2">Phase 2</span></td><td>6.17</td><td>0.91</td><td>✓ Suitable</td></tr>
+  <tr><td>lstm_32</td><td><span class="tag t1">Phase 1</span></td><td>19.7</td><td>0.91</td><td>✓ Baseline</td></tr>
+</table>
+
+<!-- ── DIRECTORY STRUCTURE ── -->
+<h2>Directory Structure</h2>
+
+<h3>📄 report/ — PDF Reports</h3>
+<table>
+  <tr><th>File</th><th>Size</th><th>Description</th></tr>
+  <tr><td><a href="report/Engine_ROM_Report_v3.pdf" target="_blank">Engine_ROM_Report_v3.pdf</a></td><td>946 KB</td><td>Main report — all 3 phases, Pareto frontier, C validation, virtual sensor assessment (22 pages)</td></tr>
+  <tr><td><a href="report/ROM_Methodology_Comparison.pdf" target="_blank">ROM_Methodology_Comparison.pdf</a></td><td>423 KB</td><td>MATLAB vs Python/PyTorch comparison — accuracy, efficiency, deployment readiness (15 pages)</td></tr>
+  <tr><td><a href="report/Engine_ROM_Report_v2.pdf" target="_blank">Engine_ROM_Report_v2.pdf</a></td><td>1.4 MB</td><td>Phase 2 report — full 7-model compression suite and Pareto frontier</td></tr>
+  <tr><td><a href="report/Engine_ROM_Report.pdf" target="_blank">Engine_ROM_Report.pdf</a></td><td>2.3 MB</td><td>Phase 1 baseline report — first LSTM-32 training and C code generation</td></tr>
+</table>
+
+<h3>💻 src/ — C Source Files (MCU-Ready)</h3>
+<div class="callout">All C files are C99 compliant, use only static memory, no stdlib. Include the <code>.h</code>+<code>.c</code> pair in your ECU project and call the Step function once per control cycle.</div>
+<table>
+  <tr><th>Files</th><th>Flash</th><th>RMSE</th><th>Notes</th></tr>
+  <tr><td><a href="src/rom_lstm_qat.h" target="_blank">rom_lstm_qat.{h,c}</a></td><td>6.97 KB</td><td>0.91 N·m</td><td><span class="tag tr">⭐ RECOMMENDED</span> — QAT int8, best accuracy/size</td></tr>
+  <tr><td><a href="src/rom_lstm_16_q16.h" target="_blank">rom_lstm_16_q16.{h,c}</a></td><td>4.05 KB</td><td>~1.00 N·m</td><td>Q16 fixed-point, no FPU required</td></tr>
+  <tr><td><a href="src/rom_delta_poly.h" target="_blank">rom_delta_poly.{h,c}</a> + <a href="src/rom_lstm_delta8.h" target="_blank">rom_lstm_delta8.{h,c}</a></td><td>2.79 KB</td><td>~1.02 N·m</td><td>Delta composite — best under 3 KB</td></tr>
+  <tr><td><a href="src/rom_lstm_8.h" target="_blank">rom_lstm_8.{h,c}</a></td><td>2.52 KB</td><td>1.20 N·m</td><td>Smallest pure-LSTM model</td></tr>
+  <tr><td><a href="src/rom_lstm_pruned16.h" target="_blank">rom_lstm_pruned16.{h,c}</a></td><td>6.14 KB</td><td>1.19 N·m</td><td>Structured pruning from LSTM-32</td></tr>
+  <tr><td><a href="src/rom_lstm_32_q16.h" target="_blank">rom_lstm_32_q16.{h,c}</a></td><td>11.24 KB</td><td>0.91 N·m</td><td>Full LSTM-32 in int16_t weights</td></tr>
+  <tr><td><a href="src/rom_lstm_16.h" target="_blank">rom_lstm_16.{h,c}</a></td><td>6.17 KB</td><td>0.91 N·m</td><td>Float32 LSTM-16, Phase 2 recommendation</td></tr>
+  <tr><td><a href="src/rom_lstm_32.h" target="_blank">rom_lstm_32.{h,c}</a></td><td>19.7 KB</td><td>0.91 N·m</td><td>Original baseline — float32 LSTM-32</td></tr>
+  <tr><td><a href="src/rom_narx_ridge.h" target="_blank">rom_narx_ridge.{h,c}</a></td><td>0.38 KB</td><td>7.23 N·m</td><td>Linear NARX, conditional use only</td></tr>
+  <tr><td><a href="src/sfun_rom_lstm32.c" target="_blank">sfun_rom_lstm32.c</a></td><td>—</td><td>—</td><td>Simulink Level-2 MEX S-Function wrapper</td></tr>
+  <tr><td><a href="src/validate_roms_harness.c" target="_blank">validate_roms_harness.c</a></td><td>—</td><td>—</td><td>C test harness — compile with all ROM files to verify</td></tr>
+</table>
+
+<h3>🐍 scripts/ — Python Scripts</h3>
+<table>
+  <tr><th>File</th><th>Phase</th><th>Description</th></tr>
+  <tr><td><a href="scripts/train_phase3.py" target="_blank">train_phase3.py</a></td><td><span class="tag t3">3</span></td><td>Trains all Phase 3 models: pruning, QAT, delta, Q16. Generates all Phase 3 C files.</td></tr>
+  <tr><td><a href="scripts/generate_v3_report.py" target="_blank">generate_v3_report.py</a></td><td><span class="tag t3">3</span></td><td>Generates Engine_ROM_Report_v3.pdf (22 pages)</td></tr>
+  <tr><td><a href="scripts/generate_comparison_report.py" target="_blank">generate_comparison_report.py</a></td><td>—</td><td>Generates ROM_Methodology_Comparison.pdf (15 pages)</td></tr>
+  <tr><td><a href="scripts/train_all_models.py" target="_blank">train_all_models.py</a></td><td><span class="tag t2">2</span></td><td>Trains all 7 Phase 2 models, generates C code, Pareto frontier</td></tr>
+  <tr><td><a href="scripts/validate_c_code.py" target="_blank">validate_c_code.py</a></td><td><span class="tag t2">2</span></td><td>Compiles and runs the C validation harness, saves results JSON</td></tr>
+  <tr><td><a href="scripts/train_rom.py" target="_blank">train_rom.py</a></td><td><span class="tag t1">1</span></td><td>Trains the LSTM-32 baseline (400 epochs, 10 simulations)</td></tr>
+  <tr><td><a href="scripts/validate_rom.py" target="_blank">validate_rom.py</a></td><td><span class="tag t1">1</span></td><td>Validates PyTorch model vs Simulink (3 held-out scenarios)</td></tr>
+  <tr><td><a href="scripts/generate_c_code.py" target="_blank">generate_c_code.py</a></td><td><span class="tag t1">1</span></td><td>Extracts PyTorch weights → C99 source (Phase 1 baseline)</td></tr>
+</table>
+
+<h3>📐 scripts/ — MATLAB Scripts</h3>
+<table>
+  <tr><th>File</th><th>Description</th></tr>
+  <tr><td><a href="scripts/collect_training_data.m" target="_blank">collect_training_data.m</a></td><td>Runs enginespeed.slx across a parameter grid to collect training data</td></tr>
+  <tr><td><a href="scripts/collect_validation_data.m" target="_blank">collect_validation_data.m</a></td><td>Runs held-out Simulink scenarios to create validation_data.{csv,mat}</td></tr>
+  <tr><td><a href="scripts/simulink_vs_c_rom.m" target="_blank">simulink_vs_c_rom.m</a></td><td>Step-by-step comparison: live Simulink vs compiled C ROMs (1,503 steps)</td></tr>
+  <tr><td><a href="scripts/create_sfun_validation.m" target="_blank">create_sfun_validation.m</a></td><td>Compiles sfun_rom_lstm32.c as MEX, inserts into Simulink, validates</td></tr>
+</table>
+
+<h3>📁 data/ — Results &amp; Metrics</h3>
+<table>
+  <tr><th>File</th><th>Description</th></tr>
+  <tr><td><a href="data/simulink_c_rom_results.json" target="_blank">simulink_c_rom_results.json</a></td><td>Key results: RMSE and R² for each C model vs live Simulink (1,503 steps)</td></tr>
+  <tr><td><a href="data/phase3_results.json" target="_blank">phase3_results.json</a></td><td>Phase 3 training metrics: pruning, QAT, delta, Q16</td></tr>
+  <tr><td><a href="data/model_comparison.json" target="_blank">model_comparison.json</a></td><td>Phase 2 model comparison: all 7 models, RMSE, flash size</td></tr>
+  <tr><td><a href="data/c_validation_results.json" target="_blank">c_validation_results.json</a></td><td>Per-step C harness output for all models</td></tr>
+</table>
+
+<h3>⚙️ models/ — Model Configs</h3>
+<table>
+  <tr><th>File</th><th>Description</th></tr>
+  <tr><td><a href="models/normalization.json" target="_blank">normalization.json</a></td><td>Input/output z-score normalization stats (mean, std) — used by all C models</td></tr>
+  <tr><td><a href="models/delta_poly_info.json" target="_blank">delta_poly_info.json</a></td><td>Delta composite polynomial coefficients and scaler parameters</td></tr>
+  <tr><td><a href="models/narx_ridge_info.json" target="_blank">narx_ridge_info.json</a></td><td>NARX-Ridge coefficients (tiny — 377 bytes)</td></tr>
+</table>
+
+<!-- ── HOW TO REPRODUCE ── -->
+<h2>How to Reproduce Everything from Scratch</h2>
+
+<h3>Prerequisites</h3>
+<ul>
+  <li>MATLAB R2025b + Simulink (for data collection)</li>
+  <li>Python 3.x + PyTorch, scikit-learn, numpy, pandas, matplotlib, reportlab</li>
+</ul>
+
+<h3>Step 1 — Collect Data from Simulink</h3>
+<pre>matlab -r "run scripts/collect_training_data.m; run scripts/collect_validation_data.m"</pre>
+
+<h3>Step 2 — Train Phase 1 Baseline</h3>
+<pre>python3 scripts/train_rom.py
+python3 scripts/validate_rom.py
+python3 scripts/generate_c_code.py</pre>
+
+<h3>Step 3 — Train Phase 2 Compression Suite (7 models)</h3>
+<pre>python3 scripts/train_all_models.py</pre>
+
+<h3>Step 4 — Train Phase 3 Advanced Compression</h3>
+<pre>python3 scripts/train_phase3.py</pre>
+
+<h3>Step 5 — Validate C Code Against Simulink</h3>
+<pre>matlab -r "run scripts/simulink_vs_c_rom.m"
+python3 scripts/validate_c_code.py</pre>
+
+<h3>Step 6 — Generate Reports</h3>
+<pre>python3 scripts/generate_v3_report.py
+python3 scripts/generate_comparison_report.py</pre>
+
+<!-- ── EMBED THE RECOMMENDED MODEL ── -->
+<h2>Using the Recommended C Model in Your ECU</h2>
+<div class="callout">Copy <code>src/rom_lstm_qat.h</code> and <code>src/rom_lstm_qat.c</code> into your embedded project. No other dependencies required.</div>
+
+<pre><code>#include "rom_lstm_qat.h"
+
+// Allocate state once (static or on heap)
+ROM_lstm_qat_State state;
+
+// Initialise at startup
+ROM_lstm_qat_Reset(&state);
+
+// Call once per control cycle (e.g. 10 ms)
+float torque_Nm = ROM_lstm_qat_Step(
+    &state,
+    air_charge_g_per_s,    // e.g. 0.5 – 3.0 g/s
+    speed_rad_per_s,       // e.g. 100 – 600 rad/s
+    spark_advance_deg      // e.g. 5 – 35 deg
+);</code></pre>
+
+<!-- ── IMPORTANT NOTES ── -->
+<h2>Important Engineering Notes</h2>
+<ul>
+  <li><strong>NARX-Ridge closed-loop:</strong> When used in closed-loop, NARX-Ridge can drift. Always reset state if the input trajectory deviates significantly from training conditions.</li>
+  <li><strong>Delta poly normalisation:</strong> The delta LSTM-8 residual is trained on normalised deltas. At inference, sum <code>ROM_delta_poly_Predict()</code> + <code>ROM_lstm_delta8_Step()</code> before denormalising.</li>
+  <li><strong>Q16 path for no-FPU MCUs:</strong> Use <code>rom_lstm_16_q16.{h,c}</code> for MCUs without FPU. All arithmetic uses <code>int32_t</code> accumulators and <code>int16_t</code> weights.</li>
+  <li><strong>MATLAB R2025b API:</strong> The <code>From Workspace</code> block uses <code>'Interpolate','off'</code> not the removed <code>'ZeroOrderHold','on'</code>. Signal logging must be set on the PORT handle, not the line handle.</li>
+</ul>
+
+<div style="margin-top:48px;padding-top:20px;border-top:1px solid #1e293b;
+  font-size:12px;color:#334155;text-align:center;">
+  Engine ROM Project · Python/PyTorch + MATLAB Simulink · Phases 1–3 Complete · Generated March 2026
+</div>
+
+</div>
+</body>
+</html>

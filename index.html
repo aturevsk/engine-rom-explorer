@@ -508,21 +508,21 @@ code {
 <nav class="sidebar">
   <div class="sidebar-section">Navigate</div>
 
-  <div class="nav-item active" onclick="scrollTo('start')">
+  <div class="nav-item active" onclick="navTo('start')">
     <span class="nav-icon">🗺️</span> Start Here
   </div>
-  <div class="nav-item" onclick="scrollTo('summary')">
+  <div class="nav-item" onclick="navTo('summary')">
     <span class="nav-icon">📊</span> Key Results
   </div>
 
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">Documents</div>
 
-  <div class="nav-item" onclick="scrollTo('reports')">
+  <div class="nav-item" onclick="navTo('reports')">
     <span class="nav-icon">📄</span> Reports
     <span class="nav-badge">4</span>
   </div>
-  <div class="nav-item" onclick="scrollTo('plots')">
+  <div class="nav-item" onclick="navTo('plots')">
     <span class="nav-icon">🖼️</span> Plots &amp; Figures
     <span class="nav-badge">25</span>
   </div>
@@ -530,15 +530,15 @@ code {
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">Code</div>
 
-  <div class="nav-item" onclick="scrollTo('csrc')">
+  <div class="nav-item" onclick="navTo('csrc')">
     <span class="nav-icon">💻</span> C Source Code
     <span class="nav-badge">18</span>
   </div>
-  <div class="nav-item" onclick="scrollTo('python')">
+  <div class="nav-item" onclick="navTo('python')">
     <span class="nav-icon">🐍</span> Python Scripts
     <span class="nav-badge">9</span>
   </div>
-  <div class="nav-item" onclick="scrollTo('matlab')">
+  <div class="nav-item" onclick="navTo('matlab')">
     <span class="nav-icon">📐</span> MATLAB Scripts
     <span class="nav-badge">4</span>
   </div>
@@ -546,11 +546,11 @@ code {
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">Data</div>
 
-  <div class="nav-item" onclick="scrollTo('data')">
+  <div class="nav-item" onclick="navTo('data')">
     <span class="nav-icon">📁</span> Data &amp; Models
     <span class="nav-badge">14</span>
   </div>
-  <div class="nav-item" onclick="scrollTo('simulink')">
+  <div class="nav-item" onclick="navTo('simulink')">
     <span class="nav-icon">🔷</span> Simulink Models
     <span class="nav-badge">2</span>
   </div>
@@ -588,7 +588,7 @@ code {
       <div class="step-label">Start here · 5 min</div>
       <div class="step-title">Read the README</div>
       <div class="step-desc">One-page overview of every file in the project — what it is, what phase it came from, and how to reproduce everything from scratch.</div>
-      <a href="README.md" class="step-file">README.md</a>
+      <a href="project-overview.html" class="step-file">Project Overview</a>
       <div class="step-meta">
         <span class="step-badge">18 KB</span>
         <span class="step-badge">Markdown</span>
@@ -1810,7 +1810,7 @@ code {
 const sections = ['start','summary','reports','csrc','python','matlab','plots','data','simulink'];
 const navItems = document.querySelectorAll('.nav-item');
 
-function scrollTo(id) {
+function navTo(id) {
   const el = document.getElementById(id);
   if (el) {
     const y = el.getBoundingClientRect().top + window.scrollY - 80;
