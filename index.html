@@ -18,6 +18,7 @@
   --p1:        #60a5fa;   /* Phase 1 – blue */
   --p2:        #34d399;   /* Phase 2 – emerald */
   --p3:        #a78bfa;   /* Phase 3 – violet */
+  --p4:        #f97316;   /* Phase 4 – orange */
   --cmp:       #fbbf24;   /* Comparison – amber */
   --good:      #4ade80;
   --warn:      #fb923c;
@@ -58,6 +59,8 @@ a:hover { text-decoration: underline; }
 .pill-blue  { color: var(--p1); border-color: var(--p1); }
 .pill-green { color: var(--p2); border-color: var(--p2); }
 .pill-violet{ color: var(--p3); border-color: var(--p3); }
+.pill-orange{ color: var(--p4); border-color: var(--p4); }
+.tag-p4    { background: rgba(249, 115, 22, 0.12); color: var(--p4); }
 .pill-star  { color: var(--star); border-color: var(--star); }
 
 /* ── Layout ── */
@@ -286,7 +289,8 @@ code {
 }
 .report-sidebar.p1 { background: var(--p1); }
 .report-sidebar.p2 { background: var(--p2); }
-.report-sidebar.p3 { background: var(--accent); }
+.report-sidebar.p3 { background: var(--p3); }
+.report-sidebar.p4 { background: var(--p4); }
 .report-sidebar.cmp { background: var(--cmp); }
 .report-body { padding: 20px 22px; }
 .report-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
@@ -497,6 +501,7 @@ code {
     <span class="pill pill-blue">Phase 1: Baseline</span>
     <span class="pill pill-green">Phase 2: Compression</span>
     <span class="pill pill-violet">Phase 3: Advanced</span>
+    <span class="pill pill-orange">Phase 4: Closed-Loop Simulink</span>
     <span class="pill pill-star">⭐ QAT LSTM-32 Recommended</span>
   </div>
 </header>
@@ -520,11 +525,15 @@ code {
 
   <div class="nav-item" onclick="navTo('reports')">
     <span class="nav-icon">📄</span> Reports
-    <span class="nav-badge">4</span>
+    <span class="nav-badge">5</span>
+  </div>
+  <div class="nav-item" onclick="navTo('phase4')">
+    <span class="nav-icon">🔁</span> Closed-Loop Validation
+    <span class="nav-badge" style="background: var(--p4);">New</span>
   </div>
   <div class="nav-item" onclick="navTo('plots')">
     <span class="nav-icon">🖼️</span> Plots &amp; Figures
-    <span class="nav-badge">25</span>
+    <span class="nav-badge">33</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -540,7 +549,7 @@ code {
   </div>
   <div class="nav-item" onclick="navTo('matlab')">
     <span class="nav-icon">📐</span> MATLAB Scripts
-    <span class="nav-badge">4</span>
+    <span class="nav-badge">8</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -552,7 +561,7 @@ code {
   </div>
   <div class="nav-item" onclick="navTo('simulink')">
     <span class="nav-icon">🔷</span> Simulink Models
-    <span class="nav-badge">2</span>
+    <span class="nav-badge">3</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -609,13 +618,13 @@ code {
 
     <div class="tour-step">
       <div class="step-num">3</div>
-      <div class="step-label">Main report · 45 min</div>
-      <div class="step-title">Full Technical Report v3</div>
-      <div class="step-desc">22-page deep-dive covering all three phases: baseline LSTM, 7 compressed models, Phase 3 advanced techniques (QAT, pruning, delta, Q16), Pareto frontier, C validation, and virtual sensor assessment.</div>
-      <a target="_blank" href="report/Engine_ROM_Report_v3.pdf" class="step-file">report/Engine_ROM_Report_v3.pdf</a>
+      <div class="step-label">Main report · 60 min</div>
+      <div class="step-title">Full Technical Report v4 ← Latest</div>
+      <div class="step-desc">Comprehensive report covering all four phases: baseline LSTM, 7 compressed models, Phase 3 advanced techniques (QAT, pruning, delta, Q16), Pareto frontier, C validation, and Phase 4 closed-loop Simulink validation across 5 transient scenarios.</div>
+      <a target="_blank" href="report/Engine_ROM_Report_v4.pdf" class="step-file">report/Engine_ROM_Report_v4.pdf</a>
       <div class="step-meta">
-        <span class="step-badge">946 KB · 22 pages</span>
-        <span class="step-badge" style="color: var(--p3);">Phase 3</span>
+        <span class="step-badge">1.8 MB · 14 sections</span>
+        <span class="step-badge" style="color: var(--p4);">Phase 4 ← New</span>
       </div>
     </div>
 
@@ -623,11 +632,11 @@ code {
       <div class="step-num">4</div>
       <div class="step-label">Visual proof · 10 min</div>
       <div class="step-title">Browse the Key Plots</div>
-      <div class="step-desc">Check how C-deployed models track Simulink ground truth, and study the Pareto frontier chart to understand the accuracy vs. flash trade-off across all models.</div>
-      <a target="_blank" href="plots/simulink_c_rom_traces.png" class="step-file">plots/simulink_c_rom_traces.png</a>
+      <div class="step-desc">See the QAT ROM running closed-loop inside Simulink, replacing the Combustion subsystem across 5 transient scenarios. Also check the Pareto frontier and C vs Simulink traces.</div>
+      <a target="_blank" href="plots/clval_summary.png" class="step-file">plots/clval_summary.png</a>
       <div class="step-meta">
+        <span class="step-badge">+ clval_S1–S5.png</span>
         <span class="step-badge">+ phase3_pareto.png</span>
-        <span class="step-badge">+ phase3_validation.png</span>
       </div>
     </div>
 
@@ -666,7 +675,7 @@ code {
   <div class="section-header">
     <span class="section-icon">📊</span>
     <span class="section-title">Key Results — All Models at a Glance</span>
-    <span class="section-desc">R² ≥ 0.9997 for all LSTM models · Full scale = 200 N·m</span>
+    <span class="section-desc">R² ≥ 0.9997 for all LSTM models · Full scale = 200 N·m · Phase 4: Closed-loop validated</span>
   </div>
 
   <div class="metrics-banner">
@@ -689,6 +698,14 @@ code {
     <div class="metric-item">
       <div class="metric-value">14</div>
       <div class="metric-label">C Files Generated</div>
+    </div>
+    <div class="metric-item" style="border-color: var(--p4);">
+      <div class="metric-value" style="color: var(--p4);">5</div>
+      <div class="metric-label">Closed-Loop Scenarios</div>
+    </div>
+    <div class="metric-item" style="border-color: var(--p4);">
+      <div class="metric-value" style="color: var(--p4);">0.9955</div>
+      <div class="metric-label">Avg R² (closed-loop)</div>
     </div>
   </div>
 
@@ -803,32 +820,53 @@ code {
   <div class="section-header">
     <span class="section-icon">📄</span>
     <span class="section-title">Reports</span>
-    <span class="section-desc">4 PDF reports · 5.1 MB total</span>
+    <span class="section-desc">5 PDF reports · 7.1 MB total</span>
   </div>
 
-  <!-- Main report -->
+  <!-- Main report v4 -->
   <div class="report-card report-main">
+    <div class="report-sidebar p4"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/Engine_ROM_Report_v4.pdf">Engine ROM Report v4 — Closed-Loop Simulink Validation</a>
+        <span class="tag tag-rec" style="margin-left: 8px; font-size: 10px;">⭐ Latest &amp; Primary</span>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-p4">Phase 4 · NEW</span>
+        <span class="file-size">1.8 MB · 14 sections · March 2026</span>
+      </div>
+      <div class="report-desc">
+        Cumulative document covering all four phases. Adds Phase 4: the QAT LSTM-32 ROM deployed as a Level-2
+        S-Function inside Simulink, replacing the Combustion subsystem in a fully closed-loop configuration.
+        Validated across 5 transient scenarios with varied throttle profiles and spark advance levels.
+        <strong>This is the document to share with engineering and management stakeholders.</strong>
+      </div>
+      <div class="report-toc">
+        §1–12 All v3 content <span>·</span> §13 Phase 4: Closed-Loop Validation (5 scenarios, torque &amp; speed RMSE) <span>·</span>
+        §14 Updated Conclusions <span>·</span> App A Model Table <span>·</span> App B C Code Inventory
+      </div>
+    </div>
+  </div>
+
+  <!-- v3 -->
+  <div class="report-card">
     <div class="report-sidebar p3"></div>
     <div class="report-body">
       <div class="report-title">
-        <a target="_blank" href="report/Engine_ROM_Report_v3.pdf">Engine ROM Report v3 — Full Technical Report</a>
-        <span class="tag tag-rec" style="margin-left: 8px; font-size: 10px;">⭐ Primary</span>
+        <a target="_blank" href="report/Engine_ROM_Report_v3.pdf">Engine ROM Report v3 — Advanced Compression Techniques</a>
       </div>
       <div class="report-meta">
         <span class="tag tag-p3">Phase 3</span>
         <span class="file-size">946 KB · 22 pages · March 2026</span>
       </div>
       <div class="report-desc">
-        The definitive technical document covering the complete project from data collection through advanced compression.
-        Includes all three phases, Pareto frontier analysis, step-by-step C vs. Simulink validation results,
-        virtual sensor suitability assessment for ECU deployment, and flash budget recommendations.
-        <strong>This is the document to share with engineering and management stakeholders.</strong>
+        Deep-dive covering Phases 1–3: baseline LSTM, 7 compressed models, structured pruning, QAT, delta learning, Q16,
+        Pareto frontier, C validation, and virtual sensor assessment.
+        <strong>Superseded by v4 but retained for reference.</strong>
       </div>
       <div class="report-toc">
-        §1 Introduction <span>·</span> §2 Data Collection <span>·</span> §3 Model Training <span>·</span>
-        §4 Validation <span>·</span> §5 Compression Suite <span>·</span> §6 Advanced Techniques <span>·</span>
-        §7 Pareto Frontier <span>·</span> §8 C Code Generation <span>·</span> §9 S-Function <span>·</span>
-        §10 Simulink vs C Validation (incl. virtual sensor assessment) <span>·</span> §11 Conclusion
+        §1 Intro <span>·</span> §2–4 Baseline &amp; Data <span>·</span> §5–8 Phase 3 Techniques <span>·</span>
+        §9 Pareto <span>·</span> §10 C Validation <span>·</span> §11 Integration Guide <span>·</span> §12 Conclusions
       </div>
     </div>
   </div>
@@ -907,6 +945,198 @@ code {
     </div>
   </div>
 
+</section>
+
+<!-- ───────────────────────────────────────
+     § PHASE 4 – CLOSED-LOOP VALIDATION
+─────────────────────────────────────────── -->
+<section class="section" id="phase4">
+  <div class="section-header">
+    <span class="section-icon">🔁</span>
+    <span class="section-title">Phase 4 — Closed-Loop Simulink Validation</span>
+    <span class="section-desc">QAT ROM replaces Combustion subsystem · 5 transient scenarios · Avg Torque RMSE = 2.25 N·m · R² = 0.9955</span>
+  </div>
+
+  <div class="callout" style="background: rgba(249,115,22,0.06); border-color: var(--p4); color: #fed7aa;">
+    <strong>What's new in Phase 4:</strong> The QAT LSTM-32 ROM is no longer run in parallel with the physics model —
+    it <em>replaces</em> the Combustion subsystem entirely. Its torque output directly drives the Vehicle Dynamics block,
+    creating a true closed-loop ROM. This matches the MathWorks ROM-validation benchmark approach.
+  </div>
+
+  <div class="group-label" style="color: var(--p4);">Architecture</div>
+  <div class="callout callout-blue">
+    <strong>Why Level-2 S-Function, not C Caller?</strong> The LSTM requires persistent hidden state (h, c vectors)
+    across Simulink time steps. C Caller blocks are stateless — they cannot hold inter-step state.
+    A Level-2 MEX S-Function with DWork is the correct Simulink mechanism for stateful AI models.
+    DWork stores h[32] + c[32] + reset_flag = 65 doubles, zero-initialized at each simulation start.
+  </div>
+  <div class="file-grid">
+    <div class="file-card featured">
+      <div class="file-card-top">
+        <span class="file-icon">🔌</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/sfun_rom_lstm_qat.c" class="file-name">src/sfun_rom_lstm_qat.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p4">Phase 4 · S-Function</span>
+            <span class="file-size">Level-2 MEX · includes rom_lstm_qat.c</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Level-2 MEX S-Function wrapping the QAT LSTM-32 ROM. Input port: width-3 vector [AirCharge, Speed, SparkAdv].
+        Output port: Torque [N·m]. LSTM h/c state stored in DWork across time steps. Discrete 0.05 s sample time.
+        The Mux (3→1) block in Simulink bundles the three scalar signals into the width-3 input.
+      </div>
+      <div class="file-inside">
+        <strong>Compile:</strong>
+        <code>xcrun clang -arch arm64 -bundle -undefined dynamic_lookup -DMATLAB_MEX_FILE -O2 -I"$MROOT/extern/include" -I"$MROOT/simulink/include" -I"src" -o "src/sfun_rom_lstm_qat.mexmaca64" "src/sfun_rom_lstm_qat.c" -lm</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p4);">Validation Models</div>
+  <div class="file-grid">
+    <div class="file-card">
+      <div class="file-card-top"><span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed_hifi_val.slx" class="file-name">enginespeed_hifi_val.slx</a>
+          <div class="file-meta"><span class="tag tag-p4">Phase 4</span><span class="file-size">HiFi ground truth</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        Copy of <code>enginespeed.slx</code> with Throttle and Spark Advance inputs replaced by
+        <em>From Workspace</em> blocks (<code>throttle_ts</code>, <code>sa_ts</code>).
+        Signal logging enabled on Speed and Torque. Used as the ground-truth reference in all Phase 4 comparisons.
+      </div>
+    </div>
+    <div class="file-card featured">
+      <div class="file-card-top"><span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed_qat_sfun.slx" class="file-name">enginespeed_qat_sfun.slx</a>
+          <div class="file-meta"><span class="tag tag-p4">Phase 4</span><span class="file-size">QAT ROM closed-loop</span></div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>The closed-loop ROM model.</strong> Combustion subsystem replaced by
+        QAT S-Function block. ROM torque output directly drives Vehicle Dynamics (closed loop).
+        Built programmatically by <code>create_sfun_validation_models.m</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="color: var(--p4);">Test Scenarios &amp; Results</div>
+  <div class="callout callout-green">
+    Each scenario runs for 25 seconds at 0.05 s intervals (501 time steps).
+    <strong>Primary metric:</strong> Torque RMSE [N·m] — direct ROM output.
+    <strong>Secondary metric:</strong> Engine Speed RMSE [rpm] — downstream closed-loop system response.
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Throttle Profile</th>
+        <th>Spark Advance</th>
+        <th>Torque RMSE (N·m)</th>
+        <th>R² Torque</th>
+        <th>Speed RMSE (rpm)</th>
+        <th>R² Speed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>S1</strong> Rich transient</td>
+        <td>15 multi-step (5–50°)</td>
+        <td>7° (retarded)</td>
+        <td>3.62</td>
+        <td>0.9935</td>
+        <td>292</td>
+        <td>0.9888</td>
+      </tr>
+      <tr>
+        <td><strong>S2</strong> Rich transient</td>
+        <td>Same profile</td>
+        <td>15° (nominal)</td>
+        <td>2.35</td>
+        <td>0.9975</td>
+        <td>161</td>
+        <td>0.9966</td>
+      </tr>
+      <tr>
+        <td><strong>S3</strong> Rich transient</td>
+        <td>Same profile</td>
+        <td>27° (advanced)</td>
+        <td>2.23</td>
+        <td>0.9979</td>
+        <td>140</td>
+        <td>0.9975</td>
+      </tr>
+      <tr>
+        <td><strong>S4</strong> Throttle step</td>
+        <td>5°→50° at t=5s, back at t=18s</td>
+        <td>15° (nominal)</td>
+        <td>2.18</td>
+        <td>0.9948</td>
+        <td>180</td>
+        <td>0.9987</td>
+      </tr>
+      <tr>
+        <td><strong>S5</strong> SA sweep</td>
+        <td>30° constant</td>
+        <td>7°→27° at t=5s</td>
+        <td><strong>0.85</strong></td>
+        <td>0.9936</td>
+        <td><strong>30</strong></td>
+        <td>0.9994</td>
+      </tr>
+      <tr style="background: rgba(249,115,22,0.08); font-weight: 600;">
+        <td colspan="3">Average (all 5 scenarios)</td>
+        <td>2.25 N·m</td>
+        <td>0.9955</td>
+        <td>160 rpm</td>
+        <td>0.9962</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="group-label" style="color: var(--p4);">Key Plots</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_summary.png"><img class="plot-thumb" src="plots/clval_summary.png" alt="Closed-Loop Summary" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/clval_summary.png">clval_summary.png</a></div>
+        <div class="plot-desc">Summary bar chart: Torque RMSE and Speed RMSE across all 5 scenarios. S5 best (0.85 N·m), S1 worst (3.62 N·m).</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S2_Rich_SA15.png"><img class="plot-thumb" src="plots/clval_S2_Rich_SA15.png" alt="S2 Rich SA15" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/clval_S2_Rich_SA15.png">clval_S2_Rich_SA15.png</a></div>
+        <div class="plot-desc">S2 (nominal operating point): HiFi vs QAT ROM torque and speed over 25 s multi-step throttle excitation. RMSE = 2.35 N·m.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S4_Throttle_Step.png"><img class="plot-thumb" src="plots/clval_S4_Throttle_Step.png" alt="S4 Throttle Step" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/clval_S4_Throttle_Step.png">clval_S4_Throttle_Step.png</a></div>
+        <div class="plot-desc">S4 (throttle step 5→50°): sudden load transient response. ROM tracks the step with 2.18 N·m RMSE and Speed R²=0.999.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S5_SA_Step.png"><img class="plot-thumb" src="plots/clval_S5_SA_Step.png" alt="S5 SA Step" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/clval_S5_SA_Step.png">clval_S5_SA_Step.png</a></div>
+        <div class="plot-desc">S5 (SA step 7°→27°): best-case scenario — constant throttle, only ignition timing changes. ROM RMSE = 0.85 N·m.</div>
+      </div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/quick_compare.png"><img class="plot-thumb" src="plots/quick_compare.png" alt="Quick Compare" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info">
+        <div class="plot-name"><a target="_blank" href="plots/quick_compare.png">quick_compare.png</a></div>
+        <div class="plot-desc">Two-panel comparison: Torque (top) and Speed (bottom) — HiFi blue vs QAT ROM red dashed. Rich transient, SA=15°.</div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ───────────────────────────────────────
@@ -1174,15 +1404,33 @@ code {
         <div class="file-name-wrap">
           <a target="_blank" href="src/sfun_rom_lstm32.c" class="file-name">src/sfun_rom_lstm32.c</a>
           <div class="file-meta">
-            <span class="tag tag-p2">S-Function</span>
+            <span class="tag tag-p2">S-Function · LSTM-32</span>
             <span class="file-size">4.4 KB</span>
           </div>
         </div>
       </div>
       <div class="file-desc">
-        Simulink Level-2 MEX S-Function wrapper for LSTM-32. Allows the ROM to be used
-        as a Simulink block inside <code>enginespeed.slx</code>. Uses DWork to store LSTM hidden state
-        between time steps. Compile with <code>mex sfun_rom_lstm32.c rom_lstm_32.c</code> in MATLAB.
+        Original Phase 2 Level-2 MEX S-Function for LSTM-32 (float32 weights). Superseded by
+        <code>sfun_rom_lstm_qat.c</code> for Phase 4 closed-loop validation.
+      </div>
+    </div>
+
+    <div class="file-card featured">
+      <div class="file-card-top">
+        <span class="file-icon">🔌</span>
+        <div class="file-name-wrap">
+          <a target="_blank" href="src/sfun_rom_lstm_qat.c" class="file-name">src/sfun_rom_lstm_qat.c</a>
+          <div class="file-meta">
+            <span class="tag tag-p4">Phase 4 · S-Function · QAT</span>
+            <span class="file-size">6.5 KB · Compiled: sfun_rom_lstm_qat.mexmaca64</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>Phase 4 closed-loop S-Function.</strong> Level-2 MEX wrapper for <code>rom_lstm_qat.c</code>.
+        DWork stores LSTM h[32] + c[32] + reset_flag (65 doubles). Inputs: width-3 [AirCharge, Speed, SparkAdv].
+        Output: Torque [N·m]. Discrete 0.05 s sample time. Normalizes inputs and denormalizes output internally.
+        <strong>This is the file that enables the QAT ROM to run closed-loop inside Simulink.</strong>
       </div>
     </div>
 
@@ -1204,6 +1452,46 @@ code {
     Each script is self-contained and reads from <code>data/</code> and writes to <code>src/</code>,
     <code>models/</code>, <code>plots/</code>, and <code>report/</code>.
     Dependencies: <code>pip install torch scikit-learn numpy pandas matplotlib reportlab</code>
+  </div>
+
+  <div class="group-label" style="color: var(--p4);">Phase 4 — Closed-Loop Simulink Validation (Run After Phase 3)</div>
+  <div class="script-list">
+    <div class="script-card">
+      <div class="script-num">1</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/create_sfun_validation_models.m">scripts/create_sfun_validation_models.m</a></div>
+        <div class="script-desc">Builds both validation Simulink models programmatically: <code>enginespeed_hifi_val.slx</code> (HiFi with From Workspace inputs) and <code>enginespeed_qat_sfun.slx</code> (QAT ROM closed-loop). Handles R2025b API quirks: deletes lines before blocks, uses port handles for signal logging, dynamically traces AirCharge source handle before deleting Combustion.</div>
+        <div class="script-produces">→ Produces: <code>enginespeed_hifi_val.slx</code>, <code>enginespeed_qat_sfun.slx</code></div>
+      </div>
+      <div class="script-size">12 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">2</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/set_model_initfcn.m">scripts/set_model_initfcn.m</a></div>
+        <div class="script-desc">Sets <code>PreLoadFcn</code> and <code>InitFcn</code> callbacks on both models so they work when opened cold from the Simulink GUI (no MATLAB workspace setup needed). PreLoadFcn creates default <code>throttle_ts</code> / <code>sa_ts</code> if not present; InitFcn adds <code>src/</code> to path for the MEX binary.</div>
+        <div class="script-produces">→ Modifies callbacks in both .slx files</div>
+      </div>
+      <div class="script-size">2 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">3</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/run_closed_loop_validation.m">scripts/run_closed_loop_validation.m</a></div>
+        <div class="script-desc">Runs all 5 closed-loop validation scenarios (varied throttle profiles + SA=7°/15°/27° + step changes). Extracts Torque and Speed signals from both models, time-aligns them onto a 0.05 s grid, computes Torque RMSE (primary) and Speed RMSE (secondary), saves 5 per-scenario plots + summary plot.</div>
+        <div class="script-produces">→ Produces: <code>plots/clval_*.png</code>, <code>data/cl_validation_results.mat</code></div>
+      </div>
+      <div class="script-size">16 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">4</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/quick_compare.m">scripts/quick_compare.m</a></div>
+        <div class="script-desc">Standalone script that runs both models with a single scenario (rich transient, SA=15°) and produces a clean 2-panel comparison plot (Torque top, Speed bottom). Good for a quick sanity check after any model change.</div>
+        <div class="script-produces">→ Produces: <code>plots/quick_compare.png</code></div>
+      </div>
+      <div class="script-size">3 KB</div>
+    </div>
   </div>
 
   <div class="group-label" style="color: var(--p3);">Phase 3 — Run Last (Advanced Compression)</div>
@@ -1412,6 +1700,38 @@ code {
     <span class="section-icon">🖼️</span>
     <span class="section-title">Plots &amp; Figures</span>
     <span class="section-desc">All in plots/ · PNG · Auto-generated by training scripts</span>
+  </div>
+
+  <div class="group-label" style="color: var(--p4);">Phase 4 — Closed-Loop Simulink Validation</div>
+  <div class="plot-gallery">
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_summary.png"><img class="plot-thumb" src="plots/clval_summary.png" alt="CL Summary" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_summary.png">clval_summary.png</a></div><div class="plot-desc">Summary RMSE bar chart across all 5 scenarios (Torque + Speed). Average torque RMSE = 2.25 N·m.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S1_Rich_SA7.png"><img class="plot-thumb" src="plots/clval_S1_Rich_SA7.png" alt="S1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S1_Rich_SA7.png">clval_S1_Rich_SA7.png</a></div><div class="plot-desc">S1: Rich transient, SA=7° (worst case — below training distribution). Torque RMSE = 3.62 N·m.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S2_Rich_SA15.png"><img class="plot-thumb" src="plots/clval_S2_Rich_SA15.png" alt="S2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S2_Rich_SA15.png">clval_S2_Rich_SA15.png</a></div><div class="plot-desc">S2: Rich transient, SA=15° (nominal). Torque RMSE = 2.35 N·m, Speed RMSE = 161 rpm.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S3_Rich_SA27.png"><img class="plot-thumb" src="plots/clval_S3_Rich_SA27.png" alt="S3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S3_Rich_SA27.png">clval_S3_Rich_SA27.png</a></div><div class="plot-desc">S3: Rich transient, SA=27° (advanced ignition). Torque RMSE = 2.23 N·m.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S4_Throttle_Step.png"><img class="plot-thumb" src="plots/clval_S4_Throttle_Step.png" alt="S4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S4_Throttle_Step.png">clval_S4_Throttle_Step.png</a></div><div class="plot-desc">S4: Throttle step 5°→50°. Sudden load transient. Speed R²=0.999 — ROM tracks the transient well.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/clval_S5_SA_Step.png"><img class="plot-thumb" src="plots/clval_S5_SA_Step.png" alt="S5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S5_SA_Step.png">clval_S5_SA_Step.png</a></div><div class="plot-desc">S5: SA step 7°→27° — best scenario. Torque RMSE = 0.85 N·m, Speed RMSE = 30 rpm.</div></div>
+    </div>
+    <div class="plot-card">
+      <a target="_blank" href="plots/quick_compare.png"><img class="plot-thumb" src="plots/quick_compare.png" alt="Quick Compare" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/quick_compare.png">quick_compare.png</a></div><div class="plot-desc">Two-panel comparison: Torque and Speed HiFi vs ROM (rich transient, SA=15°). Quick visual sanity check.</div></div>
+    </div>
   </div>
 
   <div class="group-label" style="color: var(--cmp);">Methodology Comparison</div>
@@ -1771,16 +2091,36 @@ code {
       <div class="file-card-top">
         <span class="file-icon">🔷</span>
         <div class="file-name-wrap">
-          <a href="enginespeed_sfval.slx.r2025a" class="file-name">enginespeed_sfval.slx.r2025a</a>
+          <a href="enginespeed_hifi_val.slx" class="file-name">enginespeed_hifi_val.slx</a>
           <div class="file-meta">
-            <span class="file-size">47 KB</span>
+            <span class="tag tag-p4">Phase 4</span>
+            <span class="file-size">30 KB · HiFi ground truth</span>
           </div>
         </div>
       </div>
       <div class="file-desc">
-        Modified copy of <code>enginespeed.slx</code> with the LSTM-32 S-Function block inserted
-        as a Variant Subsystem alongside the original Combustion block. Used by <code>create_sfun_validation.m</code>
-        to test that the MEX S-Function matches the physics model. R2025a format (saved by MATLAB automatically).
+        HiFi validation model: copy of <code>enginespeed.slx</code> with Throttle and Spark Advance
+        replaced by <em>From Workspace</em> blocks. Signal logging on Speed and Torque ports.
+        Used as the ground-truth reference in Phase 4 closed-loop validation.
+        PreLoadFcn creates default workspace variables when opened from GUI.
+      </div>
+    </div>
+    <div class="file-card featured">
+      <div class="file-card-top">
+        <span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed_qat_sfun.slx" class="file-name">enginespeed_qat_sfun.slx</a>
+          <div class="file-meta">
+            <span class="tag tag-p4">Phase 4</span>
+            <span class="file-size">29 KB · QAT ROM closed-loop</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>The closed-loop ROM model.</strong> Combustion subsystem removed; replaced by a Mux (3→1)
+        feeding a Level-2 S-Function (<code>sfun_rom_lstm_qat.mexmaca64</code>). ROM torque output wired
+        directly to Vehicle Dynamics input — true closed-loop operation. Run this to see the QAT LSTM
+        controlling engine speed in a full Simulink feedback loop.
       </div>
     </div>
   </div>
@@ -1794,7 +2134,7 @@ code {
   font-size: 12px; color: var(--muted); padding-bottom: 32px;">
   <div>
     <strong style="color: var(--text);">Engine ROM Project</strong> ·
-    Python/PyTorch + MATLAB Simulink · Phase 1–3 Complete
+    Python/PyTorch + MATLAB Simulink · <span style="color: var(--p4);">Phase 1–4 Complete</span>
   </div>
   <div>
     Generated by Claude Code · March 2026 ·
@@ -1807,7 +2147,7 @@ code {
 
 <script>
 // ── Active nav highlight on scroll ──
-const sections = ['start','summary','reports','csrc','python','matlab','plots','data','simulink'];
+const sections = ['start','summary','reports','phase4','csrc','python','matlab','plots','data','simulink'];
 const navItems = document.querySelectorAll('.nav-item');
 
 function navTo(id) {
