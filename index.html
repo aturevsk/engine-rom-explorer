@@ -549,7 +549,7 @@ code {
   </div>
   <div class="nav-item" onclick="navTo('matlab')">
     <span class="nav-icon">📐</span> MATLAB Scripts
-    <span class="nav-badge">9</span>
+    <span class="nav-badge">11</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -561,7 +561,7 @@ code {
   </div>
   <div class="nav-item" onclick="navTo('simulink')">
     <span class="nav-icon">🔷</span> Simulink Models
-    <span class="nav-badge">3</span>
+    <span class="nav-badge">4</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -1527,6 +1527,33 @@ code {
       </div>
       <div class="script-size">65 KB</div>
     </div>
+    <div class="script-card">
+      <div class="script-num">5</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/create_mlfcn_model.m">scripts/create_mlfcn_model.m</a></div>
+        <div class="script-desc"><strong>Windows-portable model builder.</strong> Creates <code>enginespeed_qat_mlfcn.slx</code> by
+          replacing the MEX S-Function block with a MATLAB Function block. Reads all QAT int8 weights from
+          <code>src/rom_lstm_qat.c</code>, dequantizes them, and embeds the full LSTM forward pass (with
+          persistent h/c state) as MATLAB code — no MEX compilation required on any platform.
+          Uses the Stateflow EMChart API to set the function text programmatically.</div>
+        <div class="script-produces">→ Produces: <code>enginespeed_qat_mlfcn.slx</code></div>
+      </div>
+      <div class="script-size">27 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">6</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/build_sfun_windows.m">scripts/build_sfun_windows.m</a></div>
+        <div class="script-desc"><strong>Cross-platform MEX compile script.</strong> Alternative to <code>create_mlfcn_model.m</code>
+          for users who prefer MEX performance. Auto-detects the current platform (<code>mexext</code>),
+          then calls <code>mex()</code> to compile <code>sfun_rom_lstm_qat.c</code> into the
+          platform-appropriate binary (<code>.mexw64</code> on Windows, <code>.mexa64</code> on Linux,
+          <code>.mexmaca64</code> on macOS ARM64). After compilation, <code>enginespeed_qat_sfun.slx</code>
+          will run natively on that platform.</div>
+        <div class="script-produces">→ Produces: <code>src/sfun_rom_lstm_qat.&lt;mexext&gt;</code></div>
+      </div>
+      <div class="script-size">1 KB</div>
+    </div>
   </div>
 
   <div class="group-label" style="color: var(--p3);">Phase 3 — Run Last (Advanced Compression)</div>
@@ -2146,16 +2173,43 @@ code {
         <div class="file-name-wrap">
           <a href="enginespeed_qat_sfun.slx" class="file-name">enginespeed_qat_sfun.slx</a>
           <div class="file-meta">
-            <span class="tag tag-p4">Phase 4</span>
+            <span class="tag tag-p4">Phase 4 · macOS</span>
             <span class="file-size">29 KB · QAT ROM closed-loop</span>
           </div>
         </div>
       </div>
       <div class="file-desc">
-        <strong>The closed-loop ROM model.</strong> Combustion subsystem removed; replaced by a Mux (3→1)
-        feeding a Level-2 S-Function (<code>sfun_rom_lstm_qat.mexmaca64</code>). ROM torque output wired
-        directly to Vehicle Dynamics input — true closed-loop operation. Run this to see the QAT LSTM
-        controlling engine speed in a full Simulink feedback loop.
+        <strong>The closed-loop ROM model (macOS ARM64).</strong> Both Induction Delay and Combustion
+        subsystems replaced by a Mux (3→1) feeding a Level-2 S-Function
+        (<code>sfun_rom_lstm_qat.mexmaca64</code>). Pre-delay AirCharge from Throttle &amp; Manifold
+        feeds the ROM directly. ROM torque drives Vehicle Dynamics in true closed-loop operation.
+        Requires <code>mexmaca64</code> binary — macOS only. For Windows/Linux use the ML Function model below.
+      </div>
+    </div>
+    <div class="file-card featured">
+      <div class="star-badge">🪟 Windows-Ready</div>
+      <div class="file-card-top">
+        <span class="file-icon">🔷</span>
+        <div class="file-name-wrap">
+          <a href="enginespeed_qat_mlfcn.slx" class="file-name">enginespeed_qat_mlfcn.slx</a>
+          <div class="file-meta">
+            <span class="tag tag-p4">Phase 4 · Cross-Platform</span>
+            <span class="file-size">59 KB · MATLAB Function block</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-desc">
+        <strong>Windows/Linux/macOS portable ROM model.</strong> Identical closed-loop architecture
+        as <code>enginespeed_qat_sfun.slx</code> but replaces the MEX S-Function with a
+        <em>MATLAB Function</em> block. All QAT LSTM-32 weights (int8 dequantized) are embedded
+        directly in MATLAB code — <strong>no MEX compilation required</strong>. Runs on any
+        platform with MATLAB + Simulink installed. LSTM h/c state held in <code>persistent</code>
+        variables (auto-reset at each simulation start).
+        <br><br>
+        <strong>To run on Windows:</strong> Open in Simulink, set workspace inputs
+        (<code>throttle_ts</code>, <code>sa_ts</code>), press Run. No build step needed.
+        Alternatively use <code>scripts/build_sfun_windows.m</code> to compile the S-Function MEX
+        natively on Windows and run the <code>_sfun</code> model instead.
       </div>
     </div>
   </div>
