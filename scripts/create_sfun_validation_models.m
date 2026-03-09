@@ -8,10 +8,12 @@
 %     – Signal logging on Speed and Torque.
 %
 %   enginespeed_qat_sfun.slx
-%     – Combustion SubSystem REPLACED by Level-2 S-Function
-%       (sfun_rom_lstm_qat.mexmaca64) + a Mux that bundles the 3
-%       scalar inputs [AirCharge, Speed, SparkAdv] into the width-3
-%       S-Function input port.
+%     – BOTH "Induction to Power Stroke Delay" AND "Combustion" replaced
+%       by Level-2 S-Function (sfun_rom_lstm_qat.mexmaca64).
+%       The ROM was trained on PRE-DELAY AirCharge (Throttle & Manifold
+%       output), so it already encodes the variable transport delay.
+%       Feeding post-delay AC would double-apply the delay — bug fixed here.
+%     – Mux bundles [pre-delay AirCharge, Speed, SparkAdv] → width-3 input.
 %     – S-Function maintains LSTM h/c state in DWork across time steps.
 %     – Closed-loop: S-Function Torque output drives Vehicle Dynamics.
 %
@@ -129,44 +131,64 @@ load_system(sfun_file);
 
 % ---- B1. Locate key blocks dynamically -----------------------------------
 % Use name-matching (not hardcoded paths) for robustness across model versions.
-comb_path  = [sfun_mdl '/Combustion'];
+comb_path   = [sfun_mdl '/Combustion'];
 
 assert(~isempty(find_system(sfun_mdl,'SearchDepth',1,'Name','Combustion')), ...
        'Combustion block not found in %s', sfun_mdl);
 
-% Find Vehicle Dynamics and Spark Advance by partial name match
-all_blks = find_system(sfun_mdl, 'SearchDepth', 1, 'Type', 'block');
+% Find Vehicle Dynamics, Spark Advance, and Induction Delay by partial name
+all_blks   = find_system(sfun_mdl, 'SearchDepth', 1, 'Type', 'block');
 vd_path    = '';
 sa_fw_path = '';
+induct_path = '';
 for k = 1:numel(all_blks)
     nm = lower(get_param(all_blks{k}, 'Name'));
     if contains(nm, 'vehicle') && contains(nm, 'dynamic')
         vd_path = all_blks{k};
     elseif contains(nm, 'spark') && contains(nm, 'advance')
         sa_fw_path = all_blks{k};
+    elseif contains(nm, 'induct') || (contains(nm, 'power') && contains(nm, 'stroke'))
+        induct_path = all_blks{k};
     end
 end
-assert(~isempty(vd_path),    'Vehicle Dynamics block not found in %s', sfun_mdl);
-assert(~isempty(sa_fw_path), 'Spark Advance block not found in %s',    sfun_mdl);
-fprintf('  VD block: %s\n',    vd_path);
-fprintf('  SA block: %s\n',    sa_fw_path);
+assert(~isempty(vd_path),     'Vehicle Dynamics block not found in %s', sfun_mdl);
+assert(~isempty(sa_fw_path),  'Spark Advance block not found in %s',    sfun_mdl);
+assert(~isempty(induct_path), 'Induction Delay block not found in %s',  sfun_mdl);
+fprintf('  VD block:      %s\n', vd_path);
+fprintf('  SA block:      %s\n', sa_fw_path);
+fprintf('  Induct block:  %s\n', induct_path);
 
 comb_pos = get_param(comb_path, 'Position');
 
-% BEFORE deleting Combustion, capture the AirCharge source port handle
-% (= output port of whatever block feeds Combustion's inport 1).
-comb_ph_pre = get_param(comb_path, 'PortHandles');
-ac_line     = get_param(comb_ph_pre.Inport(1), 'Line');
-if ac_line > 0
-    ac_src_ph = get_param(ac_line, 'SrcPortHandle');
+% BEFORE deleting anything, capture the PRE-DELAY AirCharge source handle.
+% The ROM was trained on Throttle & Manifold output (pre-delay), so we trace
+% inport 1 of the Induction delay block (= Throttle & Manifold out port).
+induct_ph_pre = get_param(induct_path, 'PortHandles');
+ac_pre_line   = get_param(induct_ph_pre.Inport(1), 'Line');
+if ac_pre_line > 0
+    ac_src_ph  = get_param(ac_pre_line, 'SrcPortHandle');
     ac_src_blk = get_param(ac_src_ph, 'Parent');
-    fprintf('  AirCharge source: %s\n', ac_src_blk);
+    fprintf('  Pre-delay AirCharge source: %s\n', ac_src_blk);
 else
-    error('No line found on Combustion inport 1 – cannot trace AirCharge source.');
+    error('No line on Induction delay inport 1 – cannot trace pre-delay AirCharge.');
 end
-% comb_pos = [left, top, right, bottom]
 
-% ---- B2. Delete Combustion -----------------------------------------------
+% ---- B2. Delete Induction to Power Stroke Delay --------------------------
+% Delete all inport lines (AirCharge feed + Speed/N feed), then outport
+% line (to Combustion inport 1), then the block itself.
+induct_ph = get_param(induct_path, 'PortHandles');
+for p = 1:numel(induct_ph.Inport)
+    delete_line_at_port(induct_ph.Inport(p));
+end
+for p = 1:numel(induct_ph.Outport)
+    delete_lines_at_outport(induct_ph.Outport(p));
+end
+delete_block(induct_path);
+fprintf('  Deleted Induction to Power Stroke Delay\n');
+
+% ---- B3a. Delete Combustion ----------------------------------------------
+% The line from Induction delay → Combustion inport 1 was already deleted
+% above, so only remaining lines (Speed, SA via From block) need clearing.
 comb_ph = get_param(comb_path, 'PortHandles');
 for p = 1:numel(comb_ph.Inport)
     delete_line_at_port(comb_ph.Inport(p));
@@ -177,7 +199,7 @@ end
 delete_block(comb_path);
 fprintf('  Deleted Combustion subsystem\n');
 
-% ---- B3. Delete orphaned Goto1 -------------------------------------------
+% ---- B3b. Delete orphaned Goto1 ------------------------------------------
 % SA From Workspace now feeds Goto1 but Combustion (which had From Spark
 % Advance inside) is gone.  We'll wire SA directly to the Mux, so Goto1
 % is no longer needed.
@@ -189,7 +211,7 @@ if ~isempty(goto1_sf)
     fprintf('  Deleted orphaned Goto1\n');
 end
 
-% ---- B4. Add Mux (3→1 vector) --------------------------------------------
+% ---- B4. Add Mux (3→1 vector) -------------------------------------------
 % Place Mux to the left of where Combustion was.
 mux_w   = 15;
 mux_h   = comb_pos(4) - comb_pos(2);          % same height as old Combustion
@@ -223,26 +245,25 @@ end
 
 % ---- B6. Wire the network ------------------------------------------------
 %
-%   AirCharge source (= Induction Delay out, captured before Combustion deleted)
-%                         ─────────────────> Mux in[1]
-%   SA From Workspace ───────────────────> Mux in[2]
-%   VehicleDynamics Speed out ───────────> Mux in[3]
+%   Pre-delay AirCharge (Throttle & Manifold out) ──> Mux in[1]
+%   VehicleDynamics Speed out ───────────────────> Mux in[2]
+%   SA From Workspace ───────────────────────────> Mux in[3]
 %
 %   Mux out ──────────────────────────> S-Function in[1]  (width-3 vector)
 %   S-Function out (Torque) ──────────> VehicleDynamics in[1] (Teng)
 %
 % S-Function normalises u[0]=AirCharge, u[1]=Speed, u[2]=SparkAdv.
 % Mux output is [in1; in2; in3], so:
-%   Mux in[1] = AirCharge, Mux in[2] = Speed, Mux in[3] = SparkAdv
+%   Mux in[1] = pre-delay AirCharge, Mux in[2] = Speed, Mux in[3] = SparkAdv
 
 vd_ph    = get_param(vd_path,    'PortHandles');
 sa_fw_ph = get_param(sa_fw_path, 'PortHandles');
 mux_ph   = get_param(mux_blk,   'PortHandles');
 sfun_ph  = get_param(sfun_blk,  'PortHandles');
 
-% AirCharge (source traced before Combustion deleted) → Mux[1]
+% Pre-delay AirCharge (Throttle & Manifold out, traced from Induction delay in1) → Mux[1]
 add_line(sfun_mdl, ac_src_ph, mux_ph.Inport(1), 'autorouting','on');
-fprintf('  Wired: AirCharge source (%s) → Mux[1]\n', ac_src_blk);
+fprintf('  Wired: Pre-delay AirCharge (%s) → Mux[1]\n', ac_src_blk);
 
 % Speed (VD out) → Mux[2]
 add_line(sfun_mdl, vd_ph.Outport(1), mux_ph.Inport(2), 'autorouting','on');

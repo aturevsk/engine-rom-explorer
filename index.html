@@ -501,7 +501,7 @@ code {
     <span class="pill pill-blue">Phase 1: Baseline</span>
     <span class="pill pill-green">Phase 2: Compression</span>
     <span class="pill pill-violet">Phase 3: Advanced</span>
-    <span class="pill pill-orange">Phase 4: Closed-Loop Simulink</span>
+    <span class="pill pill-orange">Phase 5: Wiring Fix &amp; Corrected CL</span>
     <span class="pill pill-star">⭐ QAT LSTM-32 Recommended</span>
   </div>
 </header>
@@ -525,7 +525,7 @@ code {
 
   <div class="nav-item" onclick="navTo('reports')">
     <span class="nav-icon">📄</span> Reports
-    <span class="nav-badge">5</span>
+    <span class="nav-badge">6</span>
   </div>
   <div class="nav-item" onclick="navTo('phase4')">
     <span class="nav-icon">🔁</span> Closed-Loop Validation
@@ -549,7 +549,7 @@ code {
   </div>
   <div class="nav-item" onclick="navTo('matlab')">
     <span class="nav-icon">📐</span> MATLAB Scripts
-    <span class="nav-badge">8</span>
+    <span class="nav-badge">9</span>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -619,12 +619,12 @@ code {
     <div class="tour-step">
       <div class="step-num">3</div>
       <div class="step-label">Main report · 60 min</div>
-      <div class="step-title">Full Technical Report v4 ← Latest</div>
-      <div class="step-desc">Comprehensive report covering all four phases: baseline LSTM, 7 compressed models, Phase 3 advanced techniques (QAT, pruning, delta, Q16), Pareto frontier, C validation, and Phase 4 closed-loop Simulink validation across 5 transient scenarios.</div>
-      <a target="_blank" href="report/Engine_ROM_Report_v4.pdf" class="step-file">report/Engine_ROM_Report_v4.pdf</a>
+      <div class="step-title">Full Technical Report v5 ← Latest</div>
+      <div class="step-desc">Cumulative report covering all phases including Phase 5 wiring bug fix: corrected closed-loop validation with pre-delay AirCharge (avg torque RMSE 2.25→1.77 N·m, 21% improvement). Adds §13.5 bug-fix analysis and before/after comparison table.</div>
+      <a target="_blank" href="report/Engine_ROM_Report_v5.pdf" class="step-file">report/Engine_ROM_Report_v5.pdf</a>
       <div class="step-meta">
-        <span class="step-badge">1.8 MB · 14 sections</span>
-        <span class="step-badge" style="color: var(--p4);">Phase 4 ← New</span>
+        <span class="step-badge">1.8 MB · 14 sections + §13.5</span>
+        <span class="step-badge" style="color: var(--p4);">Phase 5 ← New</span>
       </div>
     </div>
 
@@ -820,29 +820,54 @@ code {
   <div class="section-header">
     <span class="section-icon">📄</span>
     <span class="section-title">Reports</span>
-    <span class="section-desc">5 PDF reports · 7.1 MB total</span>
+    <span class="section-desc">6 PDF reports · ~9 MB total</span>
   </div>
 
-  <!-- Main report v4 -->
+  <!-- Main report v5 -->
   <div class="report-card report-main">
     <div class="report-sidebar p4"></div>
     <div class="report-body">
       <div class="report-title">
-        <a target="_blank" href="report/Engine_ROM_Report_v4.pdf">Engine ROM Report v4 — Closed-Loop Simulink Validation</a>
+        <a target="_blank" href="report/Engine_ROM_Report_v5.pdf">Engine ROM Report v5 — Wiring Fix &amp; Corrected Closed-Loop Validation</a>
         <span class="tag tag-rec" style="margin-left: 8px; font-size: 10px;">⭐ Latest &amp; Primary</span>
       </div>
       <div class="report-meta">
-        <span class="tag tag-p4">Phase 4 · NEW</span>
-        <span class="file-size">1.8 MB · 14 sections · March 2026</span>
+        <span class="tag tag-p4">Phase 5 · NEW</span>
+        <span class="file-size">1.8 MB · 14 sections + §13.5 · March 2026</span>
       </div>
       <div class="report-desc">
-        Cumulative document covering all four phases. Adds Phase 4: the QAT LSTM-32 ROM deployed as a Level-2
-        S-Function inside Simulink, replacing the Combustion subsystem in a fully closed-loop configuration.
-        Validated across 5 transient scenarios with varied throttle profiles and spark advance levels.
+        Cumulative document covering all phases plus the v5 wiring bug fix. Adds §13.5 documenting the
+        AirCharge signal correction (pre-delay vs post-delay), before/after comparison table, and
+        corrected closed-loop results. Avg torque RMSE improved from 2.25 N·m → 1.77 N·m (−21%);
+        speed RMSE improved 161 → 111 rpm (−31%).
         <strong>This is the document to share with engineering and management stakeholders.</strong>
       </div>
       <div class="report-toc">
-        §1–12 All v3 content <span>·</span> §13 Phase 4: Closed-Loop Validation (5 scenarios, torque &amp; speed RMSE) <span>·</span>
+        §1–12 All v3 content <span>·</span> §13 Phase 4: Closed-Loop Validation <span>·</span>
+        §13.5 Wiring Bug Fix (NEW) <span>·</span> §14 Updated Conclusions <span>·</span>
+        App A Model Table <span>·</span> App B C Code Inventory
+      </div>
+    </div>
+  </div>
+
+  <!-- v4 (superseded) -->
+  <div class="report-card">
+    <div class="report-sidebar p4"></div>
+    <div class="report-body">
+      <div class="report-title">
+        <a target="_blank" href="report/Engine_ROM_Report_v4.pdf">Engine ROM Report v4 — Closed-Loop Simulink Validation</a>
+      </div>
+      <div class="report-meta">
+        <span class="tag tag-p4">Phase 4</span>
+        <span class="file-size">1.8 MB · 14 sections · March 2026</span>
+      </div>
+      <div class="report-desc">
+        Phase 4 closed-loop validation with original (pre-fix) results. Contains a wiring bug where
+        post-delay AirCharge was fed to the ROM instead of pre-delay.
+        <strong>Superseded by v5 but retained for reference.</strong>
+      </div>
+      <div class="report-toc">
+        §1–12 All v3 content <span>·</span> §13 Phase 4: Closed-Loop Validation (original results) <span>·</span>
         §14 Updated Conclusions <span>·</span> App A Model Table <span>·</span> App B C Code Inventory
       </div>
     </div>
@@ -862,7 +887,7 @@ code {
       <div class="report-desc">
         Deep-dive covering Phases 1–3: baseline LSTM, 7 compressed models, structured pruning, QAT, delta learning, Q16,
         Pareto frontier, C validation, and virtual sensor assessment.
-        <strong>Superseded by v4 but retained for reference.</strong>
+        <strong>Superseded by v5 but retained for reference.</strong>
       </div>
       <div class="report-toc">
         §1 Intro <span>·</span> §2–4 Baseline &amp; Data <span>·</span> §5–8 Phase 3 Techniques <span>·</span>
@@ -954,13 +979,21 @@ code {
   <div class="section-header">
     <span class="section-icon">🔁</span>
     <span class="section-title">Phase 4 — Closed-Loop Simulink Validation</span>
-    <span class="section-desc">QAT ROM replaces Combustion subsystem · 5 transient scenarios · Avg Torque RMSE = 2.25 N·m · R² = 0.9955</span>
+    <span class="section-desc">QAT ROM replaces Induction Delay + Combustion · 5 transient scenarios · Avg Torque RMSE = 1.77 N·m · R² = 0.9969 (corrected v5)</span>
   </div>
 
   <div class="callout" style="background: rgba(249,115,22,0.06); border-color: var(--p4); color: #fed7aa;">
     <strong>What's new in Phase 4:</strong> The QAT LSTM-32 ROM is no longer run in parallel with the physics model —
-    it <em>replaces</em> the Combustion subsystem entirely. Its torque output directly drives the Vehicle Dynamics block,
-    creating a true closed-loop ROM. This matches the MathWorks ROM-validation benchmark approach.
+    it <em>replaces</em> both the <em>Induction to Power Stroke Delay</em> and <em>Combustion</em> subsystems entirely.
+    Its torque output directly drives the Vehicle Dynamics block, creating a true closed-loop ROM.
+    This matches the MathWorks ROM-validation benchmark approach (pre-delay AirCharge fed to ROM).
+  </div>
+  <div class="callout" style="background: rgba(74,222,128,0.06); border-color: var(--good); color: #bbf7d0; margin-top: 8px;">
+    <strong>⚠️ v5 Wiring Bug Fix:</strong> The original v4 deployment incorrectly fed <em>post-delay</em> AirCharge to the ROM
+    (output of the Induction Delay block), causing the delay to be applied twice. Since the ROM was trained on
+    <em>pre-delay</em> AirCharge (Throttle &amp; Manifold output), the fix deletes the Induction Delay block and
+    wires Throttle &amp; Manifold directly to the S-Function. No retraining needed.
+    Result: avg torque RMSE improved <strong>2.25 → 1.77 N·m (−21%)</strong>, speed RMSE improved <strong>161 → 111 rpm (−31%)</strong>.
   </div>
 
   <div class="group-label" style="color: var(--p4);">Architecture</div>
@@ -1017,9 +1050,11 @@ code {
         </div>
       </div>
       <div class="file-desc">
-        <strong>The closed-loop ROM model.</strong> Combustion subsystem replaced by
-        QAT S-Function block. ROM torque output directly drives Vehicle Dynamics (closed loop).
-        Built programmatically by <code>create_sfun_validation_models.m</code>.
+        <strong>The closed-loop ROM model.</strong> Both the <em>Induction to Power Stroke Delay</em> and
+        <em>Combustion</em> subsystems replaced by the QAT S-Function block. Pre-delay AirCharge
+        (from Throttle &amp; Manifold) feeds the ROM directly — consistent with how it was trained.
+        ROM torque output drives Vehicle Dynamics in closed loop.
+        Built programmatically by <code>create_sfun_validation_models.m</code> (v5 fix applied).
       </div>
     </div>
   </div>
@@ -1048,53 +1083,53 @@ code {
         <td><strong>S1</strong> Rich transient</td>
         <td>15 multi-step (5–50°)</td>
         <td>7° (retarded)</td>
-        <td>3.62</td>
-        <td>0.9935</td>
-        <td>292</td>
-        <td>0.9888</td>
+        <td>2.05</td>
+        <td>0.9979</td>
+        <td>132</td>
+        <td>0.9977</td>
       </tr>
       <tr>
         <td><strong>S2</strong> Rich transient</td>
         <td>Same profile</td>
         <td>15° (nominal)</td>
-        <td>2.35</td>
-        <td>0.9975</td>
-        <td>161</td>
-        <td>0.9966</td>
+        <td>2.10</td>
+        <td>0.9980</td>
+        <td>128</td>
+        <td>0.9978</td>
       </tr>
       <tr>
         <td><strong>S3</strong> Rich transient</td>
         <td>Same profile</td>
         <td>27° (advanced)</td>
-        <td>2.23</td>
+        <td>2.13</td>
+        <td>0.9981</td>
+        <td>128</td>
         <td>0.9979</td>
-        <td>140</td>
-        <td>0.9975</td>
       </tr>
       <tr>
         <td><strong>S4</strong> Throttle step</td>
         <td>5°→50° at t=5s, back at t=18s</td>
         <td>15° (nominal)</td>
-        <td>2.18</td>
-        <td>0.9948</td>
-        <td>180</td>
-        <td>0.9987</td>
+        <td>1.75</td>
+        <td>0.9966</td>
+        <td>142</td>
+        <td>0.9992</td>
       </tr>
       <tr>
         <td><strong>S5</strong> SA sweep</td>
         <td>30° constant</td>
         <td>7°→27° at t=5s</td>
-        <td><strong>0.85</strong></td>
-        <td>0.9936</td>
-        <td><strong>30</strong></td>
-        <td>0.9994</td>
+        <td><strong>0.83</strong></td>
+        <td>0.9940</td>
+        <td><strong>24</strong></td>
+        <td>0.9996</td>
       </tr>
       <tr style="background: rgba(249,115,22,0.08); font-weight: 600;">
-        <td colspan="3">Average (all 5 scenarios)</td>
-        <td>2.25 N·m</td>
-        <td>0.9955</td>
-        <td>160 rpm</td>
-        <td>0.9962</td>
+        <td colspan="3">Average (all 5 scenarios) — v5 corrected</td>
+        <td>1.77 N·m</td>
+        <td>0.9969</td>
+        <td>111 rpm</td>
+        <td>0.9984</td>
       </tr>
     </tbody>
   </table>
@@ -1105,28 +1140,28 @@ code {
       <a target="_blank" href="plots/clval_summary.png"><img class="plot-thumb" src="plots/clval_summary.png" alt="Closed-Loop Summary" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
       <div class="plot-info">
         <div class="plot-name"><a target="_blank" href="plots/clval_summary.png">clval_summary.png</a></div>
-        <div class="plot-desc">Summary bar chart: Torque RMSE and Speed RMSE across all 5 scenarios. S5 best (0.85 N·m), S1 worst (3.62 N·m).</div>
+        <div class="plot-desc">Summary bar chart: Torque RMSE and Speed RMSE across all 5 scenarios (v5 corrected). S5 best (0.83 N·m), S1 worst (2.05 N·m). Avg = 1.77 N·m.</div>
       </div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S2_Rich_SA15.png"><img class="plot-thumb" src="plots/clval_S2_Rich_SA15.png" alt="S2 Rich SA15" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
       <div class="plot-info">
         <div class="plot-name"><a target="_blank" href="plots/clval_S2_Rich_SA15.png">clval_S2_Rich_SA15.png</a></div>
-        <div class="plot-desc">S2 (nominal operating point): HiFi vs QAT ROM torque and speed over 25 s multi-step throttle excitation. RMSE = 2.35 N·m.</div>
+        <div class="plot-desc">S2 (nominal operating point): HiFi vs QAT ROM torque and speed over 25 s multi-step throttle excitation. Torque RMSE = 2.10 N·m (v5 corrected).</div>
       </div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S4_Throttle_Step.png"><img class="plot-thumb" src="plots/clval_S4_Throttle_Step.png" alt="S4 Throttle Step" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
       <div class="plot-info">
         <div class="plot-name"><a target="_blank" href="plots/clval_S4_Throttle_Step.png">clval_S4_Throttle_Step.png</a></div>
-        <div class="plot-desc">S4 (throttle step 5→50°): sudden load transient response. ROM tracks the step with 2.18 N·m RMSE and Speed R²=0.999.</div>
+        <div class="plot-desc">S4 (throttle step 5→50°): sudden load transient response. ROM tracks the step with 1.75 N·m RMSE and Speed R²=0.999 (v5 corrected).</div>
       </div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S5_SA_Step.png"><img class="plot-thumb" src="plots/clval_S5_SA_Step.png" alt="S5 SA Step" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
       <div class="plot-info">
         <div class="plot-name"><a target="_blank" href="plots/clval_S5_SA_Step.png">clval_S5_SA_Step.png</a></div>
-        <div class="plot-desc">S5 (SA step 7°→27°): best-case scenario — constant throttle, only ignition timing changes. ROM RMSE = 0.85 N·m.</div>
+        <div class="plot-desc">S5 (SA step 7°→27°): best-case scenario — constant throttle, only ignition timing changes. Torque RMSE = 0.83 N·m, Speed RMSE = 24 rpm (v5 corrected).</div>
       </div>
     </div>
     <div class="plot-card">
@@ -1454,28 +1489,19 @@ code {
     Dependencies: <code>pip install torch scikit-learn numpy pandas matplotlib reportlab</code>
   </div>
 
-  <div class="group-label" style="color: var(--p4);">Phase 4 — Closed-Loop Simulink Validation (Run After Phase 3)</div>
+  <div class="group-label" style="color: var(--p4);">Phase 4/5 — Closed-Loop Simulink Validation (Run After Phase 3)</div>
   <div class="script-list">
     <div class="script-card">
       <div class="script-num">1</div>
       <div class="script-body">
         <div class="script-name"><a target="_blank" href="scripts/create_sfun_validation_models.m">scripts/create_sfun_validation_models.m</a></div>
-        <div class="script-desc">Builds both validation Simulink models programmatically: <code>enginespeed_hifi_val.slx</code> (HiFi with From Workspace inputs) and <code>enginespeed_qat_sfun.slx</code> (QAT ROM closed-loop). Handles R2025b API quirks: deletes lines before blocks, uses port handles for signal logging, dynamically traces AirCharge source handle before deleting Combustion.</div>
+        <div class="script-desc"><strong>v5 corrected.</strong> Builds both validation Simulink models programmatically. Deletes both the <em>Induction to Power Stroke Delay</em> and <em>Combustion</em> blocks; wires pre-delay AirCharge (Throttle &amp; Manifold output) directly to S-Function Mux[1]. Handles R2025b API quirks: port-handle-based signal logging, dynamic block search by partial name.</div>
         <div class="script-produces">→ Produces: <code>enginespeed_hifi_val.slx</code>, <code>enginespeed_qat_sfun.slx</code></div>
       </div>
       <div class="script-size">12 KB</div>
     </div>
     <div class="script-card">
       <div class="script-num">2</div>
-      <div class="script-body">
-        <div class="script-name"><a target="_blank" href="scripts/set_model_initfcn.m">scripts/set_model_initfcn.m</a></div>
-        <div class="script-desc">Sets <code>PreLoadFcn</code> and <code>InitFcn</code> callbacks on both models so they work when opened cold from the Simulink GUI (no MATLAB workspace setup needed). PreLoadFcn creates default <code>throttle_ts</code> / <code>sa_ts</code> if not present; InitFcn adds <code>src/</code> to path for the MEX binary.</div>
-        <div class="script-produces">→ Modifies callbacks in both .slx files</div>
-      </div>
-      <div class="script-size">2 KB</div>
-    </div>
-    <div class="script-card">
-      <div class="script-num">3</div>
       <div class="script-body">
         <div class="script-name"><a target="_blank" href="scripts/run_closed_loop_validation.m">scripts/run_closed_loop_validation.m</a></div>
         <div class="script-desc">Runs all 5 closed-loop validation scenarios (varied throttle profiles + SA=7°/15°/27° + step changes). Extracts Torque and Speed signals from both models, time-aligns them onto a 0.05 s grid, computes Torque RMSE (primary) and Speed RMSE (secondary), saves 5 per-scenario plots + summary plot.</div>
@@ -1484,13 +1510,22 @@ code {
       <div class="script-size">16 KB</div>
     </div>
     <div class="script-card">
-      <div class="script-num">4</div>
+      <div class="script-num">3</div>
       <div class="script-body">
         <div class="script-name"><a target="_blank" href="scripts/quick_compare.m">scripts/quick_compare.m</a></div>
         <div class="script-desc">Standalone script that runs both models with a single scenario (rich transient, SA=15°) and produces a clean 2-panel comparison plot (Torque top, Speed bottom). Good for a quick sanity check after any model change.</div>
         <div class="script-produces">→ Produces: <code>plots/quick_compare.png</code></div>
       </div>
       <div class="script-size">3 KB</div>
+    </div>
+    <div class="script-card">
+      <div class="script-num">4</div>
+      <div class="script-body">
+        <div class="script-name"><a target="_blank" href="scripts/generate_v5_report.py">scripts/generate_v5_report.py</a></div>
+        <div class="script-desc">Generates the v5 cumulative PDF report with corrected Phase 4 results. Adds §13.5 (wiring bug discovery, root cause, fix applied, before/after comparison table). All Phase 4 metrics updated to post-fix values.</div>
+        <div class="script-produces">→ Produces: <code>report/Engine_ROM_Report_v5.pdf</code></div>
+      </div>
+      <div class="script-size">65 KB</div>
     </div>
   </div>
 
@@ -1706,27 +1741,27 @@ code {
   <div class="plot-gallery">
     <div class="plot-card">
       <a target="_blank" href="plots/clval_summary.png"><img class="plot-thumb" src="plots/clval_summary.png" alt="CL Summary" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_summary.png">clval_summary.png</a></div><div class="plot-desc">Summary RMSE bar chart across all 5 scenarios (Torque + Speed). Average torque RMSE = 2.25 N·m.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_summary.png">clval_summary.png</a></div><div class="plot-desc">Summary RMSE bar chart across all 5 scenarios (Torque + Speed). Average torque RMSE = 1.77 N·m (v5 corrected).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S1_Rich_SA7.png"><img class="plot-thumb" src="plots/clval_S1_Rich_SA7.png" alt="S1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S1_Rich_SA7.png">clval_S1_Rich_SA7.png</a></div><div class="plot-desc">S1: Rich transient, SA=7° (worst case — below training distribution). Torque RMSE = 3.62 N·m.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S1_Rich_SA7.png">clval_S1_Rich_SA7.png</a></div><div class="plot-desc">S1: Rich transient, SA=7° (worst case). Torque RMSE = 2.05 N·m (was 3.62 N·m, −43% after wiring fix).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S2_Rich_SA15.png"><img class="plot-thumb" src="plots/clval_S2_Rich_SA15.png" alt="S2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S2_Rich_SA15.png">clval_S2_Rich_SA15.png</a></div><div class="plot-desc">S2: Rich transient, SA=15° (nominal). Torque RMSE = 2.35 N·m, Speed RMSE = 161 rpm.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S2_Rich_SA15.png">clval_S2_Rich_SA15.png</a></div><div class="plot-desc">S2: Rich transient, SA=15° (nominal). Torque RMSE = 2.10 N·m, Speed RMSE = 128 rpm (v5 corrected).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S3_Rich_SA27.png"><img class="plot-thumb" src="plots/clval_S3_Rich_SA27.png" alt="S3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S3_Rich_SA27.png">clval_S3_Rich_SA27.png</a></div><div class="plot-desc">S3: Rich transient, SA=27° (advanced ignition). Torque RMSE = 2.23 N·m.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S3_Rich_SA27.png">clval_S3_Rich_SA27.png</a></div><div class="plot-desc">S3: Rich transient, SA=27° (advanced ignition). Torque RMSE = 2.13 N·m (v5 corrected).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S4_Throttle_Step.png"><img class="plot-thumb" src="plots/clval_S4_Throttle_Step.png" alt="S4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S4_Throttle_Step.png">clval_S4_Throttle_Step.png</a></div><div class="plot-desc">S4: Throttle step 5°→50°. Sudden load transient. Speed R²=0.999 — ROM tracks the transient well.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S4_Throttle_Step.png">clval_S4_Throttle_Step.png</a></div><div class="plot-desc">S4: Throttle step 5°→50°. Sudden load transient. Torque RMSE = 1.75 N·m, Speed R²=0.999 (v5 corrected).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/clval_S5_SA_Step.png"><img class="plot-thumb" src="plots/clval_S5_SA_Step.png" alt="S5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
-      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S5_SA_Step.png">clval_S5_SA_Step.png</a></div><div class="plot-desc">S5: SA step 7°→27° — best scenario. Torque RMSE = 0.85 N·m, Speed RMSE = 30 rpm.</div></div>
+      <div class="plot-info"><div class="plot-name"><a target="_blank" href="plots/clval_S5_SA_Step.png">clval_S5_SA_Step.png</a></div><div class="plot-desc">S5: SA step 7°→27° — best scenario. Torque RMSE = 0.83 N·m, Speed RMSE = 24 rpm (v5 corrected).</div></div>
     </div>
     <div class="plot-card">
       <a target="_blank" href="plots/quick_compare.png"><img class="plot-thumb" src="plots/quick_compare.png" alt="Quick Compare" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="plot-thumb-placeholder" style="display:none">📊</div></a>
@@ -2134,7 +2169,7 @@ code {
   font-size: 12px; color: var(--muted); padding-bottom: 32px;">
   <div>
     <strong style="color: var(--text);">Engine ROM Project</strong> ·
-    Python/PyTorch + MATLAB Simulink · <span style="color: var(--p4);">Phase 1–4 Complete</span>
+    Python/PyTorch + MATLAB Simulink · <span style="color: var(--p4);">Phase 1–5 Complete (v5 Wiring Fix)</span>
   </div>
   <div>
     Generated by Claude Code · March 2026 ·
